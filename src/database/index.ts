@@ -1,7 +1,3 @@
-import mongoose from 'mongoose';
+import { createConnection } from 'typeorm';
 
-mongoose.connect('mongodb://localhost:27017/placebet', {
-  useNewUrlParser: true,
-  useFindAndModify: true,
-  useUnifiedTopology: true,
-});
+createConnection();

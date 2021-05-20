@@ -7,12 +7,14 @@ const betsRouter = Router();
 betsRouter.get('/', async (request, response) => {
   const betService = new BetService();
 
-  const { groupBy, date } = request.query;
+  const data = await betService.find();
 
-  const data = await betService.find(
-    groupBy ? groupBy.toString() : 'NONE',
-    date?.toString(),
-  );
+  response.json(data);
+});
+
+betsRouter.get('/resultsPerDate', async (request, response) => {
+  const betService = new BetService();
+  const data = await betService.findResultsPerDate();
 
   response.json(data);
 });

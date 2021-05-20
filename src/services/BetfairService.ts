@@ -1,9 +1,10 @@
-import { format, parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
+import { getRepository } from 'typeorm';
 
 import betfairApi from '../config/betfairApi';
 import betfairLoginApi from '../config/betfairLoginApi';
 
-import Bet from '../schemas/Bet';
+import BetModel from '../models/Bet';
 
 class BetfairService {
   public async authenticate(): Promise<string> {
@@ -16,6 +17,8 @@ class BetfairService {
   }
 
   public async integrate(): Promise<string> {
+    const betsRepository = getRepository(BetModel);
+
     const dateFilter = `2021-05-17`;
     const token = await this.authenticate();
 
@@ -45,7 +48,7 @@ class BetfairService {
     for (let index = 0; index < response.data.clearedOrders.length; index++) {
       const oldBet = response.data.clearedOrders[index];
 
-      const existsBet = await Bet.findOne({
+      const existsBet = await betsRepository.findOne({
         marketId: oldBet.marketId,
       });
 
@@ -54,24 +57,24 @@ class BetfairService {
           ? 'Under Limite HT'
           : 'Under Limite FT';
 
-        await Bet.create({
+        const bet = betsRepository.create({
+          user_id: 'a2e1736d-15bb-4c21-879d-6e28cfff552d',
           eventId: oldBet.eventId,
           marketId: oldBet.marketId,
           eventDescription: oldBet.itemDescription.eventDesc,
           marketDesc: oldBet.itemDescription.marketDesc,
-          date: format(
-            parseISO(oldBet.itemDescription.marketStartTime),
-            'yyyy-MM-dd',
+          date: parseISO(
+            format(
+              parseISO(oldBet.itemDescription.marketStartTime),
+              'yyyy-MM-dd',
+            ),
           ),
-          startTime: format(
-            parseISO(oldBet.itemDescription.marketStartTime),
-            'yyyy-MM-dd HH:mm',
-          ),
+          startTime: parseISO(oldBet.itemDescription.marketStartTime),
           method,
-          profitLoss: Number(
-            Number(oldBet.profit) - Number(oldBet.commission),
-          ).toFixed(2),
+          profitLoss: Number(Number(oldBet.profit) - Number(oldBet.commission)),
         });
+
+        await betsRepository.save(bet);
       }
     }
 
