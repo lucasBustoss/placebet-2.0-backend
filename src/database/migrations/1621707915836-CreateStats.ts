@@ -1,11 +1,11 @@
 import { MigrationInterface, QueryRunner, Table } from 'typeorm';
 /*eslint-disable*/
 
-export class CreateBets1621446388119 implements MigrationInterface {
+export class CreateStats1621707915836 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
-                name: 'bets',
+                name: 'userstats',
                 columns: [
                     {
                         name: 'id',
@@ -19,36 +19,40 @@ export class CreateBets1621446388119 implements MigrationInterface {
                         type: 'uuid',
                     },
                     {
-                        name: 'eventId',
+                        name: 'month',
                         type: 'varchar',
                     },
                     {
-                        name: 'marketId',
-                        type: 'varchar',
+                        name: 'stake',
+                        type: 'decimal',
                     },
                     {
-                        name: 'eventDescription',
-                        type: 'varchar',
+                        name: 'startBank',
+                        type: 'decimal',
                     },
                     {
-                        name: 'marketDesc',
-                        type: 'varchar',
-                    },
-                    {
-                        name: 'method',
-                        type: 'varchar',
-                    },
-                    {
-                        name: 'date',
-                        type: 'timestamp with time zone',
-                    },
-                    {
-                        name: 'startTime',
-                        type: 'timestamp with time zone',
+                        name: 'finalBank',
+                        type: 'decimal',
                     },
                     {
                         name: 'profitLoss',
                         type: 'decimal',
+                    },
+                    {
+                        name: 'roiBank',
+                        type: 'decimal',
+                    },
+                    {
+                        name: 'roiStake',
+                        type: 'decimal',
+                    },
+                    {
+                        name: 'greenDays',
+                        type: 'integer',
+                    },
+                    {
+                        name: 'redDays',
+                        type: 'integer',
                     },
                     {
                         name: 'created_at',
@@ -66,6 +70,6 @@ export class CreateBets1621446388119 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<any> {
-        await queryRunner.dropTable('bets');
+        await queryRunner.dropTable('userstats');
     }
 }

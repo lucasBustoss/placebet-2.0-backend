@@ -1,7 +1,15 @@
-import { format, startOfMonth, lastDayOfMonth, addDays } from 'date-fns';
+import {
+  format,
+  startOfMonth,
+  lastDayOfMonth,
+  addDays,
+  parseISO,
+  endOfMonth,
+} from 'date-fns';
 import { getRepository } from 'typeorm';
 
 import BetModel from '../models/Bet';
+import UserStatsModel from '../models/UserStats';
 
 interface Bet {
   profitLoss: string;
@@ -17,15 +25,27 @@ interface ResultPerDay {
 }
 
 class BetService {
-  public async find(): Promise<Bet[]> {
+  public async find(user_id: string, date: string): Promise<Bet[]> {
     const betsRepository = getRepository(BetModel);
+    const userRepository = getRepository(UserStatsModel);
 
-    const stake = 50;
+    const month = format(parseISO(date), 'MM-yyyy');
+
+    const userStats = await userRepository.findOne({ user_id, month });
+
+    const { stake } = userStats;
 
     const bets = await betsRepository
       .createQueryBuilder()
       .select(
         `SUM("profitLoss") profitLoss, method, "eventDescription", "date"`,
+      )
+      .where(`user_id = '${user_id}'`)
+      .andWhere(
+        `date BETWEEN '${format(
+          startOfMonth(parseISO(date)),
+          'yyyy-MM-dd',
+        )}' AND '${format(endOfMonth(parseISO(date)), 'yyyy-MM-dd')}'`,
       )
       .groupBy('method')
       .addGroupBy(`"eventDescription"`)
@@ -47,13 +67,29 @@ class BetService {
     return newBets;
   }
 
-  public async findResultsPerDate(): Promise<ResultPerDay[]> {
+  public async findResultsPerDate(
+    user_id: string,
+    date: string,
+  ): Promise<ResultPerDay[]> {
     const betsRepository = getRepository(BetModel);
-    const stake = 50;
+    const userRepository = getRepository(UserStatsModel);
+
+    const month = format(parseISO(date), 'MM-yyyy');
+
+    const userStats = await userRepository.findOne({ user_id, month });
+
+    const { stake } = userStats;
 
     const bets = await betsRepository
       .createQueryBuilder()
       .select(`SUM("profitLoss") profitLoss, "date"`)
+      .where(`user_id = '${user_id}'`)
+      .andWhere(
+        `date BETWEEN '${format(
+          startOfMonth(parseISO(date)),
+          'yyyy-MM-dd',
+        )}' AND '${format(endOfMonth(parseISO(date)), 'yyyy-MM-dd')}'`,
+      )
       .groupBy('date')
       .orderBy(`"date"`)
       .getRawMany();
@@ -74,7 +110,7 @@ class BetService {
         profitLoss: Number(results.reduce((sum, result) => {
           return Number(sum) + Number(result.profitloss)
         }, 0)).toFixed(2),
-        profitLossFormatted: 'R$ ' + Number(results.reduce((sum, result) => {
+        profitLossFormatted: '$ ' + Number(results.reduce((sum, result) => {
           return Number(sum) + Number(result.profitloss)
         }, 0)).toFixed(2),
         roi: Number(

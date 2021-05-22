@@ -7,20 +7,26 @@ import betfairLoginApi from '../config/betfairLoginApi';
 import BetModel from '../models/Bet';
 
 class BetfairService {
-  public async authenticate(): Promise<string> {
+  public async authenticate(
+    username: string,
+    password: string,
+  ): Promise<string> {
     const response = await betfairLoginApi.post('/localAuth', {
-      username: 'xistzera',
-      password: 'semSenha01@!',
+      username,
+      password,
     });
-
     return response.data;
   }
 
-  public async integrate(): Promise<string> {
+  public async integrate(
+    user_id: string,
+    username: string,
+    password: string,
+  ): Promise<string> {
     const betsRepository = getRepository(BetModel);
 
-    const dateFilter = `2021-05-17`;
-    const token = await this.authenticate();
+    const dateFilter = `2021-05-01`;
+    const token = await this.authenticate(username, password);
 
     const body = {
       betStatus: 'SETTLED',
@@ -35,7 +41,7 @@ class BetfairService {
       headers: {
         'content-type': 'application/json',
         'X-Authentication': token,
-        'X-Application': '4BggRlxO9IXQvJBo',
+        'X-Application': 'wrUwCj4qZMgou6oz',
       },
     };
 
@@ -58,7 +64,7 @@ class BetfairService {
           : 'Under Limite FT';
 
         const bet = betsRepository.create({
-          user_id: 'a2e1736d-15bb-4c21-879d-6e28cfff552d',
+          user_id,
           eventId: oldBet.eventId,
           marketId: oldBet.marketId,
           eventDescription: oldBet.itemDescription.eventDesc,
