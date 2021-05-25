@@ -35,6 +35,14 @@ export class CreateStats1621707915836 implements MigrationInterface {
                         type: 'decimal',
                     },
                     {
+                        name: 'startBankBetfair',
+                        type: 'decimal',
+                    },
+                    {
+                        name: 'finalBankBetfair',
+                        type: 'decimal',
+                    },
+                    {
                         name: 'profitLoss',
                         type: 'decimal',
                     },
@@ -45,14 +53,6 @@ export class CreateStats1621707915836 implements MigrationInterface {
                     {
                         name: 'roiStake',
                         type: 'decimal',
-                    },
-                    {
-                        name: 'greenDays',
-                        type: 'integer',
-                    },
-                    {
-                        name: 'redDays',
-                        type: 'integer',
                     },
                     {
                         name: 'created_at',

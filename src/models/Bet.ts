@@ -47,6 +47,9 @@ class Bet {
   @Column('float8')
   profitLoss: number;
 
+  @Column()
+  synchronized: boolean;
+
   @CreateDateColumn()
   created_at: Date;
 

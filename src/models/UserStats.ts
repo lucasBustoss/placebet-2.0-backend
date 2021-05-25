@@ -36,6 +36,12 @@ class UserStats {
   finalBank: number;
 
   @Column('float8')
+  startBankBetfair: number;
+
+  @Column('float8')
+  finalBankBetfair: number;
+
+  @Column('float8')
   profitLoss: number;
 
   @Column('float8')
@@ -43,12 +49,6 @@ class UserStats {
 
   @Column('float8')
   roiStake: number;
-
-  @Column('float8')
-  greenDays: number;
-
-  @Column('float8')
-  redDays: number;
 
   @CreateDateColumn()
   created_at: Date;

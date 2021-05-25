@@ -51,6 +51,10 @@ export class CreateBets1621446388119 implements MigrationInterface {
                         type: 'decimal',
                     },
                     {
+                        name: 'synchronized',
+                        type: 'boolean',
+                    },
+                    {
                         name: 'created_at',
                         type: 'timestamp',
                         default: 'now()',
