@@ -20,7 +20,7 @@ export class CreateStats1621707915836 implements MigrationInterface {
                     },
                     {
                         name: 'month',
-                        type: 'varchar',
+                        type: 'timestamp with time zone',
                     },
                     {
                         name: 'stake',

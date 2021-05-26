@@ -12,4 +12,16 @@ betsRouter.get('/', async (request, response) => {
   response.json(data);
 });
 
+betsRouter.get('/statsByYear', async (request, response) => {
+  const statsService = new StatsService();
+  const { user_id, date } = request.query;
+
+  const data = await statsService.findBankByYear(
+    user_id.toString(),
+    date.toString(),
+  );
+
+  response.json(data);
+});
+
 export default betsRouter;

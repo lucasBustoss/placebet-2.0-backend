@@ -7,6 +7,8 @@ import {
   endOfMonth,
   startOfYear,
   addMonths,
+  startOfDay,
+  endOfDay,
 } from 'date-fns';
 import { getRepository } from 'typeorm';
 
@@ -29,34 +31,52 @@ interface ResultPerDay {
 class BetService {
   public async find(user_id: string, date: string): Promise<Bet[]> {
     const betsRepository = getRepository(BetModel);
-    const userRepository = getRepository(UserStatsModel);
+    const userStatsRepository = getRepository(UserStatsModel);
 
     let stake;
 
-    const month = format(parseISO(date), 'MM-yyyy');
+    const month = parseISO(date);
 
-    const userStats = await userRepository.findOne({ user_id, month });
+    const userStats = await userStatsRepository
+      .createQueryBuilder('userstats')
+      .select()
+      .where(`user_id = '${user_id}'`)
+      .andWhere(
+        `month BETWEEN '${format(
+          startOfDay(month),
+          'yyyy-MM-dd HH:mm:ss',
+        )}' AND '${format(endOfDay(month), 'yyyy-MM-dd HH:mm:ss')}'`,
+      )
+      .getRawOne();
 
     if (!userStats) {
-      const previousMonth = format(addMonths(parseISO(date), -1), 'MM-yyyy');
-      const previousStats = await userRepository.findOne({
-        user_id,
-        month: previousMonth,
-      });
+      const previousMonth = addMonths(month, -1);
+
+      const previousStats = await userStatsRepository
+        .createQueryBuilder('userstats')
+        .select()
+        .where(`user_id = '${user_id}'`)
+        .andWhere(
+          `month BETWEEN '${format(
+            startOfDay(previousMonth),
+            'yyyy-MM-dd HH:mm:ss',
+          )}' AND '${format(endOfDay(previousMonth), 'yyyy-MM-dd HH:mm:ss')}'`,
+        )
+        .getRawOne();
 
       if (!previousStats) {
         stake = 50;
       } else {
-        stake = previousStats.stake;
+        stake = previousStats.userstats_stake;
       }
     } else {
-      stake = userStats.stake;
+      stake = userStats.userstats_stake;
     }
 
     const bets = await betsRepository
       .createQueryBuilder()
       .select(
-        `SUM("profitLoss") profitLoss, method, "eventDescription", "date"`,
+        `SUM("profitLoss") profitLoss,  method, "eventDescription", "date"`,
       )
       .where(`user_id = '${user_id}'`)
       .andWhere(
@@ -70,17 +90,22 @@ class BetService {
       .addGroupBy('date')
       .addGroupBy(`"startTime"`)
       .orderBy(`"startTime"`, 'DESC')
+      .addOrderBy(`"method"`, 'ASC')
       .getRawMany();
 
-    const newBets = bets.map(bet => {
-      return {
-        profitLoss: Number(bet.profitloss).toFixed(2),
-        method: bet.method as string,
-        eventDescription: bet.eventDescription as string,
-        date: format(bet.date, 'dd/MM/yyyy'),
-        roi: Number((Number(bet.profitloss) / stake) * 100).toFixed(2),
-      };
-    });
+    const newBets = [];
+
+    for (let index = 0; index < bets.length; index++) {
+      const bet = bets[index];
+
+      bet.profitLoss = Number(bet.profitloss).toFixed(2);
+      bet.method = bet.method as string;
+      bet.eventDescription = bet.eventDescription as string;
+      bet.date = format(bet.date, 'dd/MM/yyyy');
+      bet.roi = Number((Number(bet.profitloss) / stake) * 100).toFixed(2);
+
+      newBets.push(bet);
+    }
 
     return newBets;
   }
@@ -90,28 +115,46 @@ class BetService {
     date: string,
   ): Promise<ResultPerDay[]> {
     const betsRepository = getRepository(BetModel);
-    const userRepository = getRepository(UserStatsModel);
+    const userStatsRepository = getRepository(UserStatsModel);
 
     let stake;
 
-    const month = format(parseISO(date), 'MM-yyyy');
+    const month = parseISO(date);
 
-    const userStats = await userRepository.findOne({ user_id, month });
+    const userStats = await userStatsRepository
+      .createQueryBuilder('userstats')
+      .select()
+      .where(`user_id = '${user_id}'`)
+      .andWhere(
+        `month BETWEEN '${format(
+          startOfDay(month),
+          'yyyy-MM-dd HH:mm:ss',
+        )}' AND '${format(endOfDay(month), 'yyyy-MM-dd HH:mm:ss')}'`,
+      )
+      .getRawOne();
 
     if (!userStats) {
-      const previousMonth = format(addMonths(parseISO(date), -1), 'MM-yyyy');
-      const previousStats = await userRepository.findOne({
-        user_id,
-        month: previousMonth,
-      });
+      const previousMonth = addMonths(month, -1);
+
+      const previousStats = await userStatsRepository
+        .createQueryBuilder('userstats')
+        .select()
+        .where(`user_id = '${user_id}'`)
+        .andWhere(
+          `month BETWEEN '${format(
+            startOfDay(previousMonth),
+            'yyyy-MM-dd HH:mm:ss',
+          )}' AND '${format(endOfDay(previousMonth), 'yyyy-MM-dd HH:mm:ss')}'`,
+        )
+        .getRawOne();
 
       if (!previousStats) {
         stake = 50;
       } else {
-        stake = previousStats.stake;
+        stake = previousStats.userstats_stake;
       }
     } else {
-      stake = userStats.stake;
+      stake = userStats.userstats_stake;
     }
 
     const bets = await betsRepository
@@ -191,25 +234,54 @@ class BetService {
       if (existsBets.betCount != null && existsBets.betCount > 0) {
         let userStats;
 
-        const month = format(date, 'MM-yyyy');
-        userStats = await userStatsRepository.findOne({ user_id, month });
+        userStats = await userStatsRepository
+          .createQueryBuilder('userstats')
+          .select(`id`)
+          .select(`user_id`)
+          .select(`month`)
+          .addSelect(`stake`)
+          .addSelect(`"startBank"`)
+          .addSelect(`"finalBank"`)
+          .addSelect(`"startBankBetfair"`)
+          .addSelect(`"finalBankBetfair"`)
+          .addSelect(`"profitLoss"`)
+          .addSelect(`"roiBank"`)
+          .addSelect(`"roiStake"`)
+          .where(`user_id = '${user_id}'`)
+          .andWhere(
+            `month BETWEEN '${format(
+              startOfDay(date),
+              'yyyy-MM-dd HH:mm:ss',
+            )}' AND '${format(endOfDay(date), 'yyyy-MM-dd HH:mm:ss')}'`,
+          )
+          .getRawOne();
 
         if (!userStats) {
-          const previousMonth = format(addMonths(date, -1), 'MM-yyyy');
+          const previousMonth = addMonths(date, -1);
 
-          const previousStats = await userStatsRepository.findOne({
-            user_id,
-            month: previousMonth,
-          });
+          const previousStats = await userStatsRepository
+            .createQueryBuilder('userstats')
+            .select()
+            .where(`user_id = '${user_id}'`)
+            .andWhere(
+              `month BETWEEN '${format(
+                startOfDay(previousMonth),
+                'yyyy-MM-dd HH:mm:ss',
+              )}' AND '${format(
+                endOfDay(previousMonth),
+                'yyyy-MM-dd HH:mm:ss',
+              )}'`,
+            )
+            .getRawOne();
 
           userStats = userStatsRepository.create({
             user_id,
-            month,
-            stake: previousStats.stake,
-            startBank: previousStats.finalBank,
-            finalBank: previousStats.finalBank,
-            startBankBetfair: previousStats.finalBankBetfair,
-            finalBankBetfair: previousStats.finalBankBetfair,
+            month: startOfMonth(date),
+            stake: previousStats.userstats_stake,
+            startBank: previousStats.userstats_finalBank,
+            finalBank: previousStats.userstats_finalBank,
+            startBankBetfair: previousStats.userstats_finalBankBetfair,
+            finalBankBetfair: previousStats.userstats_finalBankBetfair,
             profitLoss: 0,
             roiBank: 0,
             roiStake: 0,
@@ -231,41 +303,60 @@ class BetService {
           )
           .getRawOne();
 
-        userStats.profitLoss = Number(Number(result.profitLoss).toFixed(2));
-        userStats.finalBank = Number(
-          Number(
-            Number(userStats.startBank) + Number(result.profitLoss),
-          ).toFixed(2),
-        );
-        userStats.finalBankBetfair = Number(
-          Number(
-            Number(userStats.startBankBetfair) + Number(result.profitLoss),
-          ).toFixed(2),
-        );
-        userStats.roiBank = Number(
-          Number(userStats.profitLoss / userStats.finalBank).toFixed(4),
-        );
-        userStats.roiStake = Number(
-          Number(
-            Number(userStats.profitLoss) / Number(userStats.stake),
-          ).toFixed(4),
-        );
+        const statsId = userStats.id;
 
-        userStatsRepository.save(userStats);
+        const actualStats = await userStatsRepository.findOne({
+          id: statsId,
+        });
 
-        await betsRepository
-          .createQueryBuilder()
-          .update()
-          .set({ synchronized: true })
-          .where(`user_id = '${user_id}'`)
-          .andWhere(`synchronized = false`)
-          .andWhere(
-            `date BETWEEN '${format(
-              startOfMonth(date),
-              'yyyy-MM-dd',
-            )}' AND '${format(endOfMonth(date), 'yyyy-MM-dd')}'`,
-          )
-          .execute();
+        /* eslint-disable */
+        if (actualStats) {
+          actualStats.startBank = userStats.startBank;
+          actualStats.startBankBetfair = userStats.startBankBetfair;
+          actualStats.profitLoss = Number(Number(
+            Number(userStats.profitLoss) +
+            Number(result.profitLoss),
+          ).toFixed(2));
+          actualStats.finalBank = Number(
+            Number(
+              Number(userStats.startBank) + Number(result.profitLoss),
+            ).toFixed(2),
+          );
+          actualStats.finalBankBetfair = Number(
+            Number(
+              Number(userStats.startBankBetfair) +
+              Number(result.profitLoss),
+            ).toFixed(2),
+          );
+          actualStats.roiBank = Number(
+            Number(
+              (Number(userStats.profitLoss) + Number(result.profitLoss)) / userStats.finalBank,
+            ).toFixed(4),
+          );
+          actualStats.roiStake = Number(
+            Number(
+              (Number(userStats.profitLoss) + Number(result.profitLoss)) /
+              Number(userStats.stake),
+            ).toFixed(4),
+          );
+          /* eslint-enable */
+
+          userStatsRepository.save(actualStats);
+
+          await betsRepository
+            .createQueryBuilder()
+            .update()
+            .set({ synchronized: true })
+            .where(`user_id = '${user_id}'`)
+            .andWhere(`synchronized = false`)
+            .andWhere(
+              `date BETWEEN '${format(
+                startOfMonth(date),
+                'yyyy-MM-dd',
+              )}' AND '${format(endOfMonth(date), 'yyyy-MM-dd')}'`,
+            )
+            .execute();
+        }
       }
     }
   }

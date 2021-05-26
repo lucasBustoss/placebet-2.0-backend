@@ -23,8 +23,8 @@ class UserStats {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column()
-  month: string;
+  @Column('timestamp with time zone')
+  month: Date;
 
   @Column('float8')
   stake: number;
