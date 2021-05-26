@@ -3,14 +3,15 @@ import {
   addMonths,
   endOfDay,
   format,
+  getMonth,
   parseISO,
   startOfDay,
   startOfMonth,
   startOfYear,
-  startOfYesterday,
 } from 'date-fns';
 
 import UserStatsModel from '../models/UserStats';
+import MonthConverter from '../helpers/MonthConverter';
 
 interface UserStats {
   month: string;
@@ -25,12 +26,12 @@ interface UserStats {
 }
 
 interface BankByYear {
-  month: string;
+  month: Date;
   startBank: number;
+  finalBank: number;
   profitLoss: number;
   withdraws: number;
   deposits: number;
-  finalBank: number;
   roi: number;
 }
 
@@ -85,14 +86,75 @@ class StatsService {
   public async findBankByYear(
     user_id: string,
     date: string,
-  ): Promise<BankByYear | null> {
+  ): Promise<BankByYear[]> {
     const userStatsRepository = getRepository(UserStatsModel);
+    const monthConverter = new MonthConverter();
+    const initialDate = startOfYear(parseISO(date));
+
+    let startBank;
+    let finalBank;
+
+    const stats = [];
+
+    for (let index = 0; index < 12; index++) {
+      const month = addMonths(initialDate, index);
+
+      const stat = await userStatsRepository
+        .createQueryBuilder('userstats')
+        .select(`id`)
+        .select(`user_id`)
+        .select(`month`)
+        .addSelect(`"startBank"`)
+        .addSelect(`"finalBank"`)
+        .addSelect(`"profitLoss"`)
+        .addSelect(`"roiBank"`)
+        .where(`user_id = '${user_id}'`)
+        .andWhere(
+          `month BETWEEN '${format(
+            startOfDay(month),
+            'yyyy-MM-dd HH:mm:ss',
+          )}' AND '${format(endOfDay(month), 'yyyy-MM-dd HH:mm:ss')}'`,
+        )
+        .getRawOne();
+
+      if (stat) {
+        startBank = Number(stat.startBank);
+        finalBank = Number(stat.finalBank);
+
+        stats.push({
+          month: monthConverter.toString(getMonth(stat.month)),
+          startBank,
+          finalBank,
+          profitLoss: Number(stat.profitLoss),
+          withdraws: 0,
+          deposits: 0,
+          roi: Number(stat.roiBank),
+        });
+      } else {
+        stats.push({
+          month: monthConverter.toString(getMonth(startOfDay(month))),
+          startBank: finalBank || 0,
+          finalBank: finalBank || 0,
+          profitLoss: 0,
+          withdraws: 0,
+          deposits: 0,
+          roi: 0,
+        });
+      }
+    }
+
+    return stats;
+  }
+
+  public async findBetfairBankByYear(
+    user_id: string,
+    date: string,
+  ): Promise<BetfairBankByYear[] | null> {
+    const userStatsRepository = getRepository(UserStatsModel);
+    const monthConverter = new MonthConverter();
 
     const initialDate = startOfYear(parseISO(date));
 
-    let stake;
-    let startBank;
-    let finalBank;
     let startBankBetfair;
     let finalBankBetfair;
 
@@ -106,14 +168,9 @@ class StatsService {
         .select(`id`)
         .select(`user_id`)
         .select(`month`)
-        .addSelect(`stake`)
-        .addSelect(`"startBank"`)
-        .addSelect(`"finalBank"`)
         .addSelect(`"startBankBetfair"`)
         .addSelect(`"finalBankBetfair"`)
         .addSelect(`"profitLoss"`)
-        .addSelect(`"roiBank"`)
-        .addSelect(`"roiStake"`)
         .where(`user_id = '${user_id}'`)
         .andWhere(
           `month BETWEEN '${format(
@@ -124,45 +181,31 @@ class StatsService {
         .getRawOne();
 
       if (stat) {
-        stake = stat.stake;
-        startBank = stat.startBank;
-        finalBank = stat.finalBank;
-        startBankBetfair = stat.startBankBetfair;
-        finalBankBetfair = stat.finalBankBetfair;
+        startBankBetfair = Number(stat.startBankBetfair);
+        finalBankBetfair = Number(stat.finalBankBetfair);
 
         stats.push({
-          month: stat.month,
-          stake,
-          startBank,
-          finalBank,
+          month: monthConverter.toString(getMonth(stat.month)),
           startBankBetfair,
           finalBankBetfair,
-          profitLoss: stat.profitLoss,
-          roiBank: stat.roiBank,
-          roiStake: stat.roiStake,
+          profitLoss: Number(stat.profitLoss),
+          withdraws: 0,
+          deposits: 0,
         });
       } else {
         stats.push({
-          month: startOfDay(month),
-          stake: stake || 0,
-          startBank: startBank || 0,
-          finalBank: finalBank || 0,
-          startBankBetfair: startBankBetfair || 0,
+          month: monthConverter.toString(getMonth(startOfDay(month))),
+          startBankBetfair: finalBankBetfair || 0,
           finalBankBetfair: finalBankBetfair || 0,
           profitLoss: 0,
-          roiBank: 0,
-          roiStake: 0,
+          withdraws: 0,
+          deposits: 0,
         });
       }
     }
 
     return stats;
   }
-
-  public async findBetfairBankByYear(
-    user_id: string,
-    date: string,
-  ): Promise<BetfairBankByYear | null> { }
 }
 
 export default StatsService;
