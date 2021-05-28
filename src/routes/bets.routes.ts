@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import BetService from '../services/BetService';
 import BetfairService from '../services/BetfairService';
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const betsRouter = Router();
+
+betsRouter.use(ensureAuthenticated);
 
 betsRouter.get('/', async (request, response) => {
   const betService = new BetService();

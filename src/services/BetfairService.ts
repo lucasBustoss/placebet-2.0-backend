@@ -1,36 +1,18 @@
 import { parseISO, format } from 'date-fns';
 import { getRepository } from 'typeorm';
-
 import betfairApi from '../config/betfairApi';
-import betfairLoginApi from '../config/betfairLoginApi';
 
 import BetModel from '../models/Bet';
 
 import BetService from './BetService';
 
 class BetfairService {
-  public async authenticate(
-    username: string,
-    password: string,
-  ): Promise<string> {
-    const response = await betfairLoginApi.post('/localAuth', {
-      username,
-      password,
-    });
-    return response.data;
-  }
-
-  public async integrate(
-    user_id: string,
-    username: string,
-    password: string,
-  ): Promise<string> {
+  public async integrate(user_id: string, token: string): Promise<string> {
     const betsRepository = getRepository(BetModel);
 
     const betService = new BetService();
 
     const dateFilter = `2021-05-01`;
-    const token = await this.authenticate(username, password);
 
     const body = {
       betStatus: 'SETTLED',
@@ -45,7 +27,7 @@ class BetfairService {
       headers: {
         'content-type': 'application/json',
         'X-Authentication': token,
-        'X-Application': '4BggRlxO9IXQvJBo',
+        'X-Application': process.env.BETFAIR_APIKEY,
       },
     };
 

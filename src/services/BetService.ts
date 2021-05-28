@@ -237,8 +237,8 @@ class BetService {
         userStats = await userStatsRepository
           .createQueryBuilder('userstats')
           .select(`id`)
-          .select(`user_id`)
-          .select(`month`)
+          .addSelect(`user_id`)
+          .addSelect(`month`)
           .addSelect(`stake`)
           .addSelect(`"startBank"`)
           .addSelect(`"finalBank"`)
@@ -309,7 +309,12 @@ class BetService {
           id: statsId,
         });
 
+        console.log();
+
         /* eslint-disable */
+
+        console.log(result)
+
         if (actualStats) {
           actualStats.startBank = userStats.startBank;
           actualStats.startBankBetfair = userStats.startBankBetfair;
@@ -319,12 +324,12 @@ class BetService {
           ).toFixed(2));
           actualStats.finalBank = Number(
             Number(
-              Number(userStats.startBank) + Number(result.profitLoss),
+              Number(userStats.finalBank) + Number(result.profitLoss),
             ).toFixed(2),
           );
           actualStats.finalBankBetfair = Number(
             Number(
-              Number(userStats.startBankBetfair) +
+              Number(userStats.finalBankBetfair) +
               Number(result.profitLoss),
             ).toFixed(2),
           );

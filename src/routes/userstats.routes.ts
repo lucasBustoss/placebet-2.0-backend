@@ -1,15 +1,24 @@
 import { Router } from 'express';
 import StatsService from '../services/UserStatsService';
 
+import ensureAuthenticated from '../middlewares/ensureAuthenticated';
+
 const betsRouter = Router();
 
+betsRouter.use(ensureAuthenticated);
+
 betsRouter.get('/', async (request, response) => {
-  const statsService = new StatsService();
-  const { user_id, date } = request.query;
+  try {
+    const statsService = new StatsService();
+    const { user_id, date } = request.query;
 
-  const data = await statsService.find(user_id.toString(), date.toString());
+    const data = await statsService.find(user_id.toString(), date.toString());
 
-  response.json(data);
+    return response.json(data);
+  } catch (err) {
+    console.log(err);
+    return response.status(400).json({ error: err.message });
+  }
 });
 
 betsRouter.get('/statsByYear', async (request, response) => {
