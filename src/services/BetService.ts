@@ -309,11 +309,7 @@ class BetService {
           id: statsId,
         });
 
-        console.log();
-
         /* eslint-disable */
-
-        console.log(result)
 
         if (actualStats) {
           actualStats.startBank = userStats.startBank;
