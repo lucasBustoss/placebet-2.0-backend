@@ -10,7 +10,8 @@ betsRouter.use(ensureAuthenticated);
 betsRouter.get('/', async (request, response) => {
   try {
     const statsService = new StatsService();
-    const { user_id, date } = request.query;
+    const { date } = request.query;
+    const user_id = request.user.id;
 
     const data = await statsService.find(user_id.toString(), date.toString());
 
@@ -23,7 +24,8 @@ betsRouter.get('/', async (request, response) => {
 
 betsRouter.get('/statsByYear', async (request, response) => {
   const statsService = new StatsService();
-  const { user_id, date } = request.query;
+  const { date } = request.query;
+  const user_id = request.user.id;
 
   const data = await statsService.findBankByYear(
     user_id.toString(),
@@ -35,7 +37,8 @@ betsRouter.get('/statsByYear', async (request, response) => {
 
 betsRouter.get('/statsBetfairByYear', async (request, response) => {
   const statsService = new StatsService();
-  const { user_id, date } = request.query;
+  const { date } = request.query;
+  const user_id = request.user.id;
 
   const data = await statsService.findBetfairBankByYear(
     user_id.toString(),

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import User from './User';
+import Method from './Method';
 
 @Entity('bets')
 class Bet {
@@ -36,7 +37,11 @@ class Bet {
   marketDesc: string;
 
   @Column()
-  method: string;
+  method_id: string;
+
+  @ManyToOne(() => Method)
+  @JoinColumn({ name: 'method_id' })
+  method: Method;
 
   @Column('timestamp with time zone')
   date: Date;

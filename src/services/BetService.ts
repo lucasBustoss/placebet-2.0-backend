@@ -76,7 +76,7 @@ class BetService {
     const bets = await betsRepository
       .createQueryBuilder()
       .select(
-        `SUM("profitLoss") profitLoss,  method, "eventDescription", "date"`,
+        `SUM("profitLoss") profitLoss, (select name from methods where methods.id = method_id) as method, "eventDescription", "date"`,
       )
       .where(`user_id = '${user_id}'`)
       .andWhere(

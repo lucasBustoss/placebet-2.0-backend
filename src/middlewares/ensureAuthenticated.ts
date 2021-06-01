@@ -8,6 +8,7 @@ export default async function ensureAuthenticated(
 ): Promise<void> {
   try {
     const authHeader = request.headers.authorization;
+    const { user_id } = request.headers;
 
     if (!authHeader) {
       throw response.status(400).json({ error: 'Token is missing' });
@@ -20,6 +21,10 @@ export default async function ensureAuthenticated(
     if (tokenResponse.data === false) {
       throw response.status(400).json({ error: 'Invalid Token!' });
     }
+
+    request.user = {
+      id: user_id.toString(),
+    };
 
     return next();
   } catch (err) {

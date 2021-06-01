@@ -9,7 +9,8 @@ betsRouter.use(ensureAuthenticated);
 
 betsRouter.get('/', async (request, response) => {
   const betService = new BetService();
-  const { user_id, date } = request.query;
+  const { date } = request.query;
+  const user_id = request.user.id;
 
   const data = await betService.find(user_id.toString(), date.toString());
 
@@ -18,7 +19,8 @@ betsRouter.get('/', async (request, response) => {
 
 betsRouter.get('/resultsPerDate', async (request, response) => {
   const betService = new BetService();
-  const { user_id, date } = request.query;
+  const { date } = request.query;
+  const user_id = request.user.id;
 
   const data = await betService.findResultsPerDate(
     user_id.toString(),
@@ -26,19 +28,6 @@ betsRouter.get('/resultsPerDate', async (request, response) => {
   );
 
   response.json(data);
-});
-
-betsRouter.get('/integrate', async (request, response) => {
-  const betfairService = new BetfairService();
-  const { user_id, username, password } = request.query;
-
-  const data = await betfairService.integrate(
-    user_id.toString(),
-    username.toString(),
-    password.toString(),
-  );
-
-  response.json({ message: data });
 });
 
 export default betsRouter;

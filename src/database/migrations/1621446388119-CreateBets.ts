@@ -35,8 +35,9 @@ export class CreateBets1621446388119 implements MigrationInterface {
                         type: 'varchar',
                     },
                     {
-                        name: 'method',
-                        type: 'varchar',
+                        name: 'method_id',
+                        type: 'uuid',
+                        isNullable: true
                     },
                     {
                         name: 'date',

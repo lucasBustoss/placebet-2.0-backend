@@ -1,10 +1,12 @@
-import { MigrationInterface, QueryRunner, Table } from 'typeorm';
-/*eslint-disable*/
-export class CreateUsers1621446303002 implements MigrationInterface {
+/* eslint-disable */
+
+import { MigrationInterface, QueryRunner, Table } from "typeorm";
+
+export class CreateMethods1622504571900 implements MigrationInterface {
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
-                name: 'users',
+                name: 'methods',
                 columns: [
                     {
                         name: 'id',
@@ -14,18 +16,16 @@ export class CreateUsers1621446303002 implements MigrationInterface {
                         default: 'uuid_generate_v4()',
                     },
                     {
+                        name: 'user_id',
+                        type: 'uuid',
+                    },
+                    {
                         name: 'name',
                         type: 'varchar',
                     },
                     {
-                        name: 'loginBetfair',
-                        type: 'varchar',
-                        isUnique: true,
-                    },
-                    {
-                        name: 'emailBetfair',
-                        type: 'varchar',
-                        isUnique: true,
+                        name: 'periodType',
+                        type: 'integer',
                     },
                     {
                         name: 'created_at',
@@ -43,6 +43,6 @@ export class CreateUsers1621446303002 implements MigrationInterface {
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropTable('users');
+        await queryRunner.dropTable('methods');
     }
 }

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import SessionsService from '../services/SessionsService';
+import SessionsService from '../services/SessionService';
 
 const betfairRouter = Router();
 
@@ -13,7 +13,7 @@ betfairRouter.post('/auth', async (request, response) => {
       password.toString(),
     );
 
-    return response.json({ token: data });
+    return response.json(data);
   } catch (err) {
     console.log(err);
     return response.status(400).json({ error: err.message });

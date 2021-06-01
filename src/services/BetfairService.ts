@@ -2,13 +2,15 @@ import { parseISO, format } from 'date-fns';
 import { getRepository } from 'typeorm';
 import betfairApi from '../config/betfairApi';
 
-import BetModel from '../models/Bet';
+import Bet from '../models/Bet';
+import Method from '../models/Method';
 
 import BetService from './BetService';
 
 class BetfairService {
   public async integrate(user_id: string, token: string): Promise<string> {
-    const betsRepository = getRepository(BetModel);
+    const betsRepository = getRepository(Bet);
+    const methodRepository = getRepository(Method);
 
     const betService = new BetService();
 
@@ -45,9 +47,15 @@ class BetfairService {
       });
 
       if (!existsBet) {
-        const method = oldBet.itemDescription.marketType.includes('FIRST_HALF')
-          ? 'Under Limite HT'
-          : 'Under Limite FT';
+        const periodType = oldBet.itemDescription.marketType.includes(
+          'FIRST_HALF',
+        )
+          ? 1
+          : 2;
+
+        const methods = await methodRepository.find({ user_id, periodType });
+
+        const method_id = methods.length === 1 ? methods[0].id : null;
 
         const bet = betsRepository.create({
           user_id,
@@ -62,7 +70,7 @@ class BetfairService {
             ),
           ),
           startTime: parseISO(oldBet.itemDescription.marketStartTime),
-          method,
+          method_id,
           profitLoss: Number(Number(oldBet.profit) - Number(oldBet.commission)),
           synchronized: false,
         });

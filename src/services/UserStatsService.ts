@@ -128,7 +128,7 @@ class StatsService {
           profitLoss: Number(stat.profitLoss),
           withdraws: 0,
           deposits: 0,
-          roi: Number(stat.roiBank),
+          roi: Number(Number(stat.roiBank) * 100).toFixed(2),
         });
       } else {
         stats.push({
