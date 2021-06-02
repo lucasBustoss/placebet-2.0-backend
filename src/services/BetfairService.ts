@@ -1,4 +1,4 @@
-import { parseISO, format } from 'date-fns';
+import { parseISO, format, addHours } from 'date-fns';
 import { getRepository } from 'typeorm';
 import betfairApi from '../config/betfairApi';
 
@@ -69,7 +69,10 @@ class BetfairService {
               'yyyy-MM-dd',
             ),
           ),
-          startTime: parseISO(oldBet.itemDescription.marketStartTime),
+          startTime: addHours(
+            parseISO(oldBet.itemDescription.marketStartTime),
+            -3,
+          ),
           method_id,
           profitLoss: Number(Number(oldBet.profit) - Number(oldBet.commission)),
           synchronized: false,

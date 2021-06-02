@@ -1,4 +1,4 @@
-import { Entity, getRepository, getManager } from 'typeorm';
+import { getRepository, getManager } from 'typeorm';
 
 import Method from '../models/Method';
 
