@@ -65,14 +65,11 @@ class BetfairService {
           marketDesc: oldBet.itemDescription.marketDesc,
           date: parseISO(
             format(
-              parseISO(oldBet.itemDescription.marketStartTime),
+              addHours(parseISO(oldBet.itemDescription.marketStartTime), -3),
               'yyyy-MM-dd',
             ),
           ),
-          startTime: addHours(
-            parseISO(oldBet.itemDescription.marketStartTime),
-            -3,
-          ),
+          startTime: parseISO(oldBet.itemDescription.marketStartTime),
           method_id,
           profitLoss: Number(Number(oldBet.profit) - Number(oldBet.commission)),
           synchronized: false,
