@@ -55,6 +55,12 @@ class Bet {
   @Column()
   synchronized: boolean;
 
+  @Column()
+  goalsScored: number;
+
+  @Column()
+  goalsConceded: number;
+
   @CreateDateColumn()
   created_at: Date;
 

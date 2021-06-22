@@ -76,7 +76,8 @@ class BetService {
     const bets = await betsRepository
       .createQueryBuilder()
       .select(
-        `SUM("profitLoss") profitLoss, (select name from methods where methods.id = method_id) as method, "eventDescription", "date"`,
+        `SUM("profitLoss") "profitLoss", "eventId", method_id, (select name from methods where methods.id = method_id) as method, 
+        "eventDescription", "date", SUM("goalsScored") "goalsScored", SUM("goalsConceded") "goalsConceded"`,
       )
       .where(`user_id = '${user_id}'`)
       .andWhere(
@@ -89,6 +90,8 @@ class BetService {
       .addGroupBy(`"eventDescription"`)
       .addGroupBy('date')
       .addGroupBy(`"startTime"`)
+      .addGroupBy(`"eventId"`)
+      .addGroupBy(`"method_id"`)
       .orderBy(`"startTime"`, 'DESC')
       .addOrderBy(`"method"`, 'ASC')
       .getRawMany();
@@ -98,11 +101,22 @@ class BetService {
     for (let index = 0; index < bets.length; index++) {
       const bet = bets[index];
 
-      bet.profitLoss = Number(bet.profitloss).toFixed(2);
+      const marketIds = await betsRepository
+        .createQueryBuilder()
+        .select(`"marketId"`)
+        .where(`user_id = '${user_id}'`)
+        .andWhere(`method_id = '${bet.method_id}'`)
+        .andWhere(`"eventId" = '${bet.eventId}'`)
+        .getRawMany();
+
+      bet.marketIds = marketIds;
+      bet.profitLoss = Number(bet.profitLoss).toFixed(2);
       bet.method = bet.method as string;
       bet.eventDescription = bet.eventDescription as string;
       bet.date = format(bet.date, 'dd/MM/yyyy');
-      bet.roi = Number((Number(bet.profitloss) / stake) * 100).toFixed(2);
+      bet.roi = Number((Number(bet.profitLoss) / stake) * 100).toFixed(2);
+      bet.goalsScored = bet.goalsScored as number;
+      bet.goalsConceded = bet.goalsConceded as number;
 
       newBets.push(bet);
     }
@@ -209,6 +223,47 @@ class BetService {
     }
 
     return newBets;
+  }
+
+  public async updateBet(
+    eventId: number,
+    marketIds: Array<any>,
+    method_id: string,
+    goalsScored: number,
+    goalsConceded: number,
+  ): Promise<void> {
+    const betsRepository = getRepository(BetModel);
+
+    const ids = [];
+
+    for (let index = 0; index < marketIds.length; index++) {
+      const marketId = marketIds[index];
+
+      ids.push(`'${marketId.marketId}'`);
+    }
+
+    const bets = await betsRepository
+      .createQueryBuilder()
+      .select()
+      .where(`"eventId" = '${eventId}'`)
+      .andWhere(`"marketId" IN (${ids.toString()})`)
+      .getRawMany();
+
+    for (let index = 0; index < bets.length; index++) {
+      const oldBet = bets[index];
+      const newBet = await betsRepository.findOne(oldBet.Bet_id);
+
+      console.log(oldBet.Bet_id);
+
+      newBet.method_id = method_id;
+
+      if (index === 0) {
+        newBet.goalsScored = goalsScored;
+        newBet.goalsConceded = goalsConceded;
+      }
+
+      await betsRepository.save(newBet);
+    }
   }
 
   public async updateStats(user_id: string): Promise<void> {

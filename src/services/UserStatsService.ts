@@ -107,6 +107,8 @@ class StatsService {
         .addSelect(`"startBank"`)
         .addSelect(`"finalBank"`)
         .addSelect(`"profitLoss"`)
+        .addSelect(`"bankDeposits"`)
+        .addSelect(`"bankWithdraws"`)
         .addSelect(`"roiBank"`)
         .where(`user_id = '${user_id}'`)
         .andWhere(
@@ -126,8 +128,8 @@ class StatsService {
           startBank,
           finalBank,
           profitLoss: Number(stat.profitLoss),
-          withdraws: 0,
-          deposits: 0,
+          bankDeposits: Number(stat.bankDeposits),
+          bankWithdraws: Number(stat.bankWithdraws),
           roi: Number(Number(stat.roiBank) * 100).toFixed(2),
         });
       } else {
@@ -136,8 +138,8 @@ class StatsService {
           startBank: finalBank || 0,
           finalBank: finalBank || 0,
           profitLoss: 0,
-          withdraws: 0,
-          deposits: 0,
+          bankDeposits: 0,
+          bankWithdraws: 0,
           roi: 0,
         });
       }
@@ -170,6 +172,8 @@ class StatsService {
         .select(`month`)
         .addSelect(`"startBankBetfair"`)
         .addSelect(`"finalBankBetfair"`)
+        .addSelect(`"betfairDeposits"`)
+        .addSelect(`"betfairWithdraws"`)
         .addSelect(`"profitLoss"`)
         .where(`user_id = '${user_id}'`)
         .andWhere(
@@ -189,8 +193,8 @@ class StatsService {
           startBankBetfair,
           finalBankBetfair,
           profitLoss: Number(stat.profitLoss),
-          withdraws: 0,
-          deposits: 0,
+          betfairDeposits: Number(stat.betfairDeposits),
+          betfairWithdraws: Number(stat.betfairWithdraws),
         });
       } else {
         stats.push({
@@ -198,8 +202,8 @@ class StatsService {
           startBankBetfair: finalBankBetfair || 0,
           finalBankBetfair: finalBankBetfair || 0,
           profitLoss: 0,
-          withdraws: 0,
-          deposits: 0,
+          betfairDeposits: 0,
+          betfairWithdraws: 0,
         });
       }
     }

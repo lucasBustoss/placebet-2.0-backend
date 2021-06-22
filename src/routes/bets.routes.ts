@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import BetService from '../services/BetService';
-import BetfairService from '../services/BetfairService';
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
 const betsRouter = Router();
@@ -28,6 +27,22 @@ betsRouter.get('/resultsPerDate', async (request, response) => {
   );
 
   response.json(data);
+});
+
+betsRouter.patch('/', async (request, response) => {
+  const betService = new BetService();
+  const { eventId, marketIds, method_id, goalsScored, goalsConceded } =
+    request.body;
+
+  await betService.updateBet(
+    eventId,
+    marketIds,
+    method_id,
+    goalsScored,
+    goalsConceded,
+  );
+
+  response.json();
 });
 
 export default betsRouter;
