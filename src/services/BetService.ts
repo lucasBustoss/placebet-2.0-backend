@@ -118,6 +118,8 @@ class BetService {
       bet.goalsScored = bet.goalsScored as number;
       bet.goalsConceded = bet.goalsConceded as number;
 
+      console.log(index);
+
       newBets.push(bet);
     }
 
