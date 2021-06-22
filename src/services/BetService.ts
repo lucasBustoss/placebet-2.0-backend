@@ -101,6 +101,9 @@ class BetService {
     for (let index = 0; index < bets.length; index++) {
       const bet = bets[index];
 
+      console.log(bet.eventId);
+      console.log(bet.method_id);
+
       const marketIds = await betsRepository
         .createQueryBuilder()
         .select(`"marketId"`)
@@ -108,6 +111,8 @@ class BetService {
         .andWhere(`method_id = '${bet.method_id}'`)
         .andWhere(`"eventId" = '${bet.eventId}'`)
         .getRawMany();
+
+      console.log(marketIds);
 
       bet.marketIds = marketIds;
       bet.profitLoss = Number(bet.profitLoss).toFixed(2);
@@ -117,8 +122,6 @@ class BetService {
       bet.roi = Number((Number(bet.profitLoss) / stake) * 100).toFixed(2);
       bet.goalsScored = bet.goalsScored as number;
       bet.goalsConceded = bet.goalsConceded as number;
-
-      console.log(bet.eventId);
 
       newBets.push(bet);
     }
