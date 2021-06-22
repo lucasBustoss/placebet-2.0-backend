@@ -23,7 +23,7 @@ class MethodService {
         case when SUM("profitLoss") < 0 then SUM("profitLoss") else 0 end loss,  
         method_id, "eventDescription", "date" 
       FROM "bets" "Bet" 
-      WHERE user_id = '${user_id}' AND date BETWEEN '2021-05-01' AND '2021-05-31' GROUP 
+      WHERE user_id = '${user_id}' AND date BETWEEN '2021-06-01' AND '2021-06-30' GROUP 
       BY  method_id, "eventDescription", date, "startTime" ORDER BY "startTime" DESC, "method_id" ASC)
       
       
