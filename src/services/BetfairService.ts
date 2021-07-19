@@ -1,20 +1,19 @@
+import { v4 as uuidv4 } from 'uuid';
 import { parseISO, format, addHours } from 'date-fns';
 import { getRepository } from 'typeorm';
 import betfairApi from '../config/betfairApi';
 
-import Bet from '../models/Bet';
-import Method from '../models/Method';
+import EventTypeConverter from '../helpers/EventTypeConverter';
 
-import BetService from './BetService';
+import Bet from '../models/Bet';
 
 class BetfairService {
-  public async integrate(user_id: string, token: string): Promise<string> {
+  public async integrate(user_id: string, token: string): Promise<any> {
+    const eventTypeConverter = new EventTypeConverter();
     const betsRepository = getRepository(Bet);
-    const methodRepository = getRepository(Method);
+    const bets = [];
 
-    const betService = new BetService();
-
-    const dateFilter = `2021-05-01`;
+    const dateFilter = `2021-06-01`;
 
     const body = {
       betStatus: 'SETTLED',
@@ -46,19 +45,14 @@ class BetfairService {
         marketId: oldBet.marketId,
       });
 
-      if (!existsBet) {
-        const periodType = oldBet.itemDescription.marketType.includes(
-          'FIRST_HALF',
-        )
-          ? 1
-          : 2;
+      const betHasValue =
+        Number(Number(oldBet.profit) - Number(oldBet.commission)) !== 0;
 
-        const methods = await methodRepository.find({ user_id, periodType });
-
-        const method_id = methods.length === 1 ? methods[0].id : null;
-
-        const bet = betsRepository.create({
+      if (!existsBet && betHasValue) {
+        const bet = {
+          uuid: uuidv4(),
           user_id,
+          sport: eventTypeConverter.toString(oldBet.eventTypeId),
           eventId: oldBet.eventId,
           marketId: oldBet.marketId,
           eventDescription: oldBet.itemDescription.eventDesc,
@@ -70,18 +64,15 @@ class BetfairService {
             ),
           ),
           startTime: parseISO(oldBet.itemDescription.marketStartTime),
-          method_id,
           profitLoss: Number(Number(oldBet.profit) - Number(oldBet.commission)),
           synchronized: false,
-        });
+        };
 
-        await betsRepository.save(bet);
+        bets.push(bet);
       }
     }
 
-    await betService.updateStats(user_id);
-
-    return 'Entradas integradas com sucesso!';
+    return bets;
   }
 }
 

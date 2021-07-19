@@ -1,7 +1,8 @@
-import { getRepository } from 'typeorm';
+import { getRepository, getManager } from 'typeorm';
 import {
   addMonths,
   endOfDay,
+  endOfMonth,
   format,
   getMonth,
   parseISO,
@@ -23,6 +24,8 @@ interface UserStats {
   profitLoss: number;
   roiBank: string;
   roiStake: string;
+  avgStake: string;
+  marketsCount: string;
 }
 
 interface BankByYear {
@@ -47,7 +50,26 @@ interface BetfairBankByYear {
 class StatsService {
   public async find(user_id: string, date: string): Promise<UserStats | null> {
     const statsRepository = getRepository(UserStatsModel);
-    const month = parseISO(format(startOfMonth(parseISO(date)), 'yyyy-MM-dd'));
+    const startMonth = parseISO(
+      format(startOfMonth(parseISO(date)), 'yyyy-MM-dd'),
+    );
+    const endMonth = parseISO(format(endOfMonth(parseISO(date)), 'yyyy-MM-dd'));
+    const entityManager = getManager();
+
+    /* eslint-disable */
+
+    const marketStats = await entityManager.query(`
+      SELECT 
+        avg(bets.stake) "avgStake",
+        count(bets."marketId") "marketsCount"
+      FROM "bets" 
+      WHERE bets.user_id = '${user_id}'  
+      AND date BETWEEN '${format(startOfDay(startMonth),
+      'yyyy-MM-dd HH:mm:ss',
+    )}' AND '${format(endOfDay(endMonth), 'yyyy-MM-dd HH:mm:ss')}'
+    `);
+
+    /* eslint-enable */
 
     const stats = await statsRepository
       .createQueryBuilder('userstats')
@@ -55,9 +77,9 @@ class StatsService {
       .where(`user_id = '${user_id}'`)
       .andWhere(
         `month BETWEEN '${format(
-          startOfDay(month),
+          startOfDay(startMonth),
           'yyyy-MM-dd HH:mm:ss',
-        )}' AND '${format(endOfDay(month), 'yyyy-MM-dd HH:mm:ss')}'`,
+        )}' AND '${format(endOfDay(startMonth), 'yyyy-MM-dd HH:mm:ss')}'`,
       )
       .getRawOne();
 
@@ -77,6 +99,8 @@ class StatsService {
         profitLoss: stats.userstats_profitLoss,
         roiBank: Number(stats.userstats_roiBank * 100).toFixed(2),
         roiStake: Number(stats.userstats_roiStake * 100).toFixed(2),
+        avgStake: Number(marketStats[0].avgStake).toFixed(2),
+        marketsCount: marketStats[0].marketsCount,
       };
     }
 

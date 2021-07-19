@@ -3,11 +3,11 @@ import StatsService from '../services/UserStatsService';
 
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
-const betsRouter = Router();
+const statsRouter = Router();
 
-betsRouter.use(ensureAuthenticated);
+statsRouter.use(ensureAuthenticated);
 
-betsRouter.get('/', async (request, response) => {
+statsRouter.get('/', async (request, response) => {
   try {
     const statsService = new StatsService();
     const { date } = request.query;
@@ -22,7 +22,7 @@ betsRouter.get('/', async (request, response) => {
   }
 });
 
-betsRouter.get('/statsByYear', async (request, response) => {
+statsRouter.get('/statsByYear', async (request, response) => {
   const statsService = new StatsService();
   const { date } = request.query;
   const user_id = request.user.id;
@@ -35,7 +35,7 @@ betsRouter.get('/statsByYear', async (request, response) => {
   response.json(data);
 });
 
-betsRouter.get('/statsBetfairByYear', async (request, response) => {
+statsRouter.get('/statsBetfairByYear', async (request, response) => {
   const statsService = new StatsService();
   const { date } = request.query;
   const user_id = request.user.id;
@@ -48,4 +48,4 @@ betsRouter.get('/statsBetfairByYear', async (request, response) => {
   response.json(data);
 });
 
-export default betsRouter;
+export default statsRouter;

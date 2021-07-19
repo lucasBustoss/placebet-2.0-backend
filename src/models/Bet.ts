@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 
 import User from './User';
+import League from './League';
 import Method from './Method';
 
 @Entity('bets')
@@ -53,13 +54,25 @@ class Bet {
   profitLoss: number;
 
   @Column()
-  synchronized: boolean;
-
-  @Column()
   goalsScored: number;
 
   @Column()
   goalsConceded: number;
+
+  @Column()
+  league_id: string;
+
+  roi: number;
+
+  @ManyToOne(() => League)
+  @JoinColumn({ name: 'user_id' })
+  league: League;
+
+  @Column('float8')
+  stake: number;
+
+  @Column()
+  sport: string;
 
   @CreateDateColumn()
   created_at: Date;

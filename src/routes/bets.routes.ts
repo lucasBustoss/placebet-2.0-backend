@@ -16,6 +16,16 @@ betsRouter.get('/', async (request, response) => {
   response.json(data);
 });
 
+betsRouter.post('/', async (request, response) => {
+  const betService = new BetService();
+  const user_id = request.user.id;
+  const { bets } = request.body;
+
+  const data = await betService.create(user_id, bets);
+
+  response.json(data);
+});
+
 betsRouter.get('/resultsPerDate', async (request, response) => {
   const betService = new BetService();
   const { date } = request.query;
@@ -43,6 +53,15 @@ betsRouter.patch('/', async (request, response) => {
   );
 
   response.json();
+});
+
+betsRouter.delete('/:id', async (request, response) => {
+  const betService = new BetService();
+  const { id } = request.params;
+
+  const message = await betService.deleteBet(id);
+
+  response.json({ message });
 });
 
 export default betsRouter;

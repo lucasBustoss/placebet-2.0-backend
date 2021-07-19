@@ -19,6 +19,7 @@
     "@typescript-eslint/eslint-plugin": "^4.24.0",
     "@typescript-eslint/parser": "^4.24.0",
     "axios": "^0.21.1",
+    "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "date-fns": "^2.21.3",
     "dotenv": "^10.0.0",
@@ -27,7 +28,8 @@
     "express": "^4.17.1",
     "mongoose": "^5.12.10",
     "pg": "^8.6.0",
-    "typeorm": "^0.2.32"
+    "typeorm": "^0.2.32",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.14.3",

@@ -18,7 +18,7 @@ betfairRouter.get('/integrate', async (request, response) => {
     token.toString(),
   );
 
-  response.json({ message: data });
+  response.json(data);
 });
 
 export default betfairRouter;
