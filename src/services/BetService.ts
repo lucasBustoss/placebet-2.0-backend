@@ -56,6 +56,7 @@ class BetService {
           'yyyy-MM-dd',
         )}' AND '${format(endOfMonth(parseISO(date)), 'yyyy-MM-dd')}'`,
       )
+      .orderBy(`"startTime"`, 'DESC')
       .getRawMany();
 
     for (let index = 0; index < bets.length; index++) {
@@ -204,44 +205,24 @@ class BetService {
   }
 
   public async updateBet(
-    eventId: number,
-    marketIds: Array<any>,
+    id: string,
+    stake: number,
+    league_id: string,
     method_id: string,
     goalsScored: number,
     goalsConceded: number,
   ): Promise<void> {
     const betsRepository = getRepository(BetModel);
 
-    const ids = [];
+    const bet = await betsRepository.findOne(id);
 
-    for (let index = 0; index < marketIds.length; index++) {
-      const marketId = marketIds[index];
+    bet.stake = stake;
+    bet.method_id = method_id;
+    bet.league_id = league_id;
+    bet.goalsScored = goalsScored;
+    bet.goalsConceded = goalsConceded;
 
-      ids.push(`'${marketId.marketId}'`);
-    }
-
-    const bets = await betsRepository
-      .createQueryBuilder()
-      .select()
-      .where(`"eventId" = '${eventId}'`)
-      .andWhere(`"marketId" IN (${ids.toString()})`)
-      .getRawMany();
-
-    for (let index = 0; index < bets.length; index++) {
-      const oldBet = bets[index];
-      const newBet = await betsRepository.findOne(oldBet.Bet_id);
-
-      console.log(oldBet.Bet_id);
-
-      newBet.method_id = method_id;
-
-      if (index === 0) {
-        newBet.goalsScored = goalsScored;
-        newBet.goalsConceded = goalsConceded;
-      }
-
-      await betsRepository.save(newBet);
-    }
+    await betsRepository.save(bet);
   }
 
   public async deleteBet(id: string): Promise<string> {

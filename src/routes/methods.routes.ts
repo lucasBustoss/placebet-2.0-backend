@@ -25,8 +25,9 @@ methodsRouter.get('/stats', async (request, response) => {
   try {
     const methodService = new MethodsService();
     const user_id = request.user.id;
+    const { date } = request.query;
 
-    const data = await methodService.findWithStats(user_id);
+    const data = await methodService.findWithStats(user_id, date.toString());
 
     return response.json(data);
   } catch (err) {

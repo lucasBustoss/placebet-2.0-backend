@@ -39,14 +39,16 @@ betsRouter.get('/resultsPerDate', async (request, response) => {
   response.json(data);
 });
 
-betsRouter.patch('/', async (request, response) => {
+betsRouter.patch('/:id', async (request, response) => {
   const betService = new BetService();
-  const { eventId, marketIds, method_id, goalsScored, goalsConceded } =
+  const { id } = request.params;
+  const { stake, league_id, method_id, goalsScored, goalsConceded } =
     request.body;
 
   await betService.updateBet(
-    eventId,
-    marketIds,
+    id,
+    stake,
+    league_id,
     method_id,
     goalsScored,
     goalsConceded,

@@ -1,4 +1,5 @@
 import { getRepository, getManager } from 'typeorm';
+import { startOfMonth, endOfMonth, format, parseISO } from 'date-fns';
 
 import Method from '../models/Method';
 
@@ -11,8 +12,11 @@ class MethodService {
     return methods;
   }
 
-  public async findWithStats(user_id: string): Promise<any> {
+  public async findWithStats(user_id: string, date: string): Promise<any> {
     const entityManager = getManager();
+
+    const startMonth = format(startOfMonth(parseISO(date)), 'yyyy-MM-dd');
+    const endMonth = format(endOfMonth(parseISO(date)), 'yyyy-MM-dd');
 
     const methods = await entityManager.query(`
     WITH entrances as (
@@ -23,7 +27,7 @@ class MethodService {
         case when SUM("profitLoss") < 0 then SUM("profitLoss") else 0 end loss,  
         method_id, "eventDescription", "date" 
       FROM "bets" "Bet" 
-      WHERE user_id = '${user_id}' AND date BETWEEN '2021-06-01' AND '2021-06-30' GROUP 
+      WHERE user_id = '${user_id}' AND date BETWEEN '${startMonth}' AND '${endMonth}' GROUP 
       BY  method_id, "eventDescription", date, "startTime" ORDER BY "startTime" DESC, "method_id" ASC)
       
       
