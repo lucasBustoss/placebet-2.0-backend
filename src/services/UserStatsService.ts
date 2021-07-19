@@ -61,7 +61,8 @@ class StatsService {
     const marketStats = await entityManager.query(`
       SELECT 
         avg(bets.stake) "avgStake",
-        count(bets."marketId") "marketsCount"
+        count(bets."marketId") "marketsCount",
+        sum("profitLoss") "profitLoss"
       FROM "bets" 
       WHERE bets.user_id = '${user_id}'  
       AND date BETWEEN '${format(startOfDay(startMonth),
@@ -83,12 +84,15 @@ class StatsService {
       )
       .getRawOne();
 
-    // const stats = await statsRepository.findOne({
-    //   user_id,
-    //   month,
-    // });
-
     if (stats) {
+      const profitLoss = Number(marketStats[0].profitLoss) || 0;
+      const roiBank = Number(
+        (profitLoss / Number(stats.userstats_startBank)) * 100,
+      ).toFixed(2);
+      const roiStake = Number(
+        (profitLoss / Number(stats.userstats_stake)) * 100,
+      ).toFixed(2);
+
       return {
         month: format(stats.userstats_month, 'MM-yyyy'),
         stake: stats.userstats_stake,
@@ -96,9 +100,9 @@ class StatsService {
         finalBank: stats.userstats_finalBank,
         startBankBetfair: stats.userstats_startBankBetfair,
         finalBankBetfair: stats.userstats_finalBankBetfair,
-        profitLoss: stats.userstats_profitLoss,
-        roiBank: Number(stats.userstats_roiBank * 100).toFixed(2),
-        roiStake: Number(stats.userstats_roiStake * 100).toFixed(2),
+        profitLoss,
+        roiBank,
+        roiStake,
         avgStake: Number(marketStats[0].avgStake).toFixed(2),
         marketsCount: marketStats[0].marketsCount,
       };
