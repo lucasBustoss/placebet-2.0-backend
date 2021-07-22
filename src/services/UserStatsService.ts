@@ -56,6 +56,33 @@ class StatsService {
     const endMonth = parseISO(format(endOfMonth(parseISO(date)), 'yyyy-MM-dd'));
     const entityManager = getManager();
 
+    const existsUserStats = await statsRepository.findOne({
+      user_id,
+      month: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+    });
+
+    if (!existsUserStats) {
+      const previousMonth = format(
+        addMonths(startOfMonth(new Date()), -1),
+        'yyyy-MM-dd',
+      );
+
+      const previousStats = await statsRepository.findOne({
+        user_id,
+        month: previousMonth,
+      });
+
+      if (previousStats) {
+        await this.create(
+          user_id,
+          format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+          previousStats.startBank,
+          previousStats.startBankBetfair,
+          previousStats.stake,
+        );
+      }
+    }
+
     /* eslint-disable */
 
     const marketStats = await entityManager.query(`
@@ -237,6 +264,33 @@ class StatsService {
     }
 
     return stats;
+  }
+
+  private async create(
+    user_id: string,
+    month: string,
+    startBank: number,
+    startBankBetfair: number,
+    stake: number,
+  ): Promise<void> {
+    if (startBank && startBankBetfair && stake) {
+      const usRepository = getRepository(UserStatsModel);
+
+      const userStats = usRepository.create({
+        user_id,
+        month,
+        stake,
+        startBank,
+        finalBank: startBank,
+        startBankBetfair,
+        finalBankBetfair: startBankBetfair,
+        profitLoss: 0,
+        roiBank: 0,
+        roiStake: 0,
+      });
+
+      await usRepository.save(userStats);
+    }
   }
 }
 
