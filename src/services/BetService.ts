@@ -84,7 +84,7 @@ class BetService {
           eventDescription: bet.eventDescription,
           marketDesc: bet.marketDesc,
           method_id: bet.method_id,
-          date: startOfDay(addHours(parseISO(bet.startTime), 3)),
+          date: startOfDay(addHours(parseISO(bet.startTime), -3)),
           startTime: addHours(parseISO(bet.startTime), -3),
           profitLoss: Number(Number(bet.profitLoss).toFixed(2)),
           goalsScored: bet.goalsScored ? Number(bet.goalsScored) : 0,
