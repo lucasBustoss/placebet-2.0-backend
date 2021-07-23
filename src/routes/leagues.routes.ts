@@ -21,4 +21,50 @@ leaguesRouter.get('/', async (request, response) => {
   }
 });
 
+leaguesRouter.get('/stats', async (request, response) => {
+  try {
+    const leagueService = new LeagueService();
+    const user_id = request.user.id;
+    const { date } = request.query;
+
+    const data = await leagueService.findWithStats(user_id, date.toString());
+
+    return response.json(data);
+  } catch (err) {
+    console.log(err);
+    return response.status(400).json({ error: err.message });
+  }
+});
+
+leaguesRouter.post('/', async (request, response) => {
+  const leagueService = new LeagueService();
+  const { name } = request.body;
+  const user_id = request.user.id;
+
+  const data = await leagueService.create(user_id, name);
+
+  response.json({ message: data });
+});
+
+leaguesRouter.delete('/:id', async (request, response) => {
+  try {
+    const leagueService = new LeagueService();
+    const { id } = request.params;
+
+    const message = await leagueService.deleteLeague(id);
+
+    response.json({ message });
+  } catch (err) {
+    if (err.message.includes('foreign key')) {
+      console.log(err);
+      return response.status(400).json({
+        error: `O campeonato em questão está associado a alguma entrada. 
+          Por esse motivo, não é possível excluí-lo. Verifique e tente novamente.`,
+      });
+    }
+
+    console.log(err);
+  }
+});
+
 export default leaguesRouter;

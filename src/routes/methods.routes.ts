@@ -47,12 +47,25 @@ methodsRouter.post('/', async (request, response) => {
 });
 
 methodsRouter.delete('/:id', async (request, response) => {
-  const methodService = new MethodsService();
-  const { id } = request.params;
+  try {
+    const methodService = new MethodsService();
+    const { id } = request.params;
 
-  const message = await methodService.deleteMethod(id);
+    const message = await methodService.deleteMethod(id);
 
-  response.json({ message });
+    return response.json({ message });
+  } catch (err) {
+    if (err.message.includes('foreign key')) {
+      console.log(err);
+      return response.status(400).json({
+        error: `O campeonato em questão está associado a alguma entrada. 
+          Por esse motivo, não é possível excluí-lo. Verifique e tente novamente.`,
+      });
+    }
+
+    console.log(err);
+    return response.status(400).json({ error: err.message });
+  }
 });
 
 export default methodsRouter;
