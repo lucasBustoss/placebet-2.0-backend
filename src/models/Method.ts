@@ -26,9 +26,6 @@ class UserStats {
   @Column()
   name: string;
 
-  @Column()
-  periodType: number;
-
   @CreateDateColumn()
   created_at: Date;
 

@@ -9,6 +9,7 @@ import {
   startOfDay,
   startOfMonth,
   startOfYear,
+  addHours,
 } from 'date-fns';
 
 import UserStatsModel from '../models/UserStats';
@@ -75,7 +76,7 @@ class StatsService {
       if (previousStats) {
         await this.create(
           user_id,
-          format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+          format(addHours(startOfMonth(new Date()), 3), 'yyyy-MM-dd HH:mm:ss'),
           previousStats.startBank,
           previousStats.startBankBetfair,
           previousStats.stake,
@@ -145,6 +146,7 @@ class StatsService {
     const userStatsRepository = getRepository(UserStatsModel);
     const monthConverter = new MonthConverter();
     const initialDate = startOfYear(parseISO(date));
+    const entityManager = getManager();
 
     let startBank;
     let finalBank;
@@ -154,14 +156,23 @@ class StatsService {
     for (let index = 0; index < 12; index++) {
       const month = addMonths(initialDate, index);
 
+      const marketStats = await entityManager.query(`
+      SELECT 
+        sum("profitLoss") "profitLoss"
+      FROM "bets" 
+      WHERE bets.user_id = '${user_id}'  
+      AND date BETWEEN '${format(
+        startOfMonth(month),
+        'yyyy-MM-dd HH:mm:ss',
+      )}' AND '${format(endOfMonth(month), 'yyyy-MM-dd HH:mm:ss')}'
+    `);
+
       const stat = await userStatsRepository
         .createQueryBuilder('userstats')
         .select(`id`)
         .select(`user_id`)
         .select(`month`)
         .addSelect(`"startBank"`)
-        .addSelect(`"finalBank"`)
-        .addSelect(`"profitLoss"`)
         .addSelect(`"bankDeposits"`)
         .addSelect(`"bankWithdraws"`)
         .addSelect(`"roiBank"`)
@@ -176,16 +187,18 @@ class StatsService {
 
       if (stat) {
         startBank = Number(stat.startBank);
-        finalBank = Number(stat.finalBank);
+        finalBank = Number(stat.startBank) + Number(marketStats[0].profitLoss);
 
         stats.push({
           month: monthConverter.toString(getMonth(stat.month)),
           startBank,
           finalBank,
-          profitLoss: Number(stat.profitLoss),
+          profitLoss: Number(marketStats[0].profitLoss),
           bankDeposits: Number(stat.bankDeposits),
           bankWithdraws: Number(stat.bankWithdraws),
-          roi: Number(Number(stat.roiBank) * 100).toFixed(2),
+          roi: Number(
+            (Number(marketStats[0].profitLoss) / startBank) * 100,
+          ).toFixed(2),
         });
       } else {
         stats.push({

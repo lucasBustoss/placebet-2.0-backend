@@ -8,6 +8,7 @@ import {
   addMonths,
   startOfDay,
   endOfDay,
+  addHours,
 } from 'date-fns';
 import { getRepository } from 'typeorm';
 
@@ -84,7 +85,7 @@ class BetService {
           marketDesc: bet.marketDesc,
           method_id: bet.method_id,
           date: startOfDay(parseISO(bet.startTime)),
-          startTime: bet.startTime,
+          startTime: addHours(parseISO(bet.startTime), -3),
           profitLoss: Number(Number(bet.profitLoss).toFixed(2)),
           goalsScored: bet.goalsScored ? Number(bet.goalsScored) : 0,
           goalsConceded: bet.goalsConceded ? Number(bet.goalsConceded) : 0,

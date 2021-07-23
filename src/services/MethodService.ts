@@ -27,52 +27,68 @@ class MethodService {
         case when SUM("profitLoss") < 0 then SUM("profitLoss") else 0 end loss,  
         method_id, "eventDescription", "date" 
       FROM "bets" "Bet" 
-      WHERE user_id = '${user_id}' AND date BETWEEN '${startMonth}' AND '${endMonth}' GROUP 
+      WHERE user_id = '${user_id}' AND date BETWEEN '${startMonth}' AND '${endMonth}' AND method_id IS NOT NULL GROUP 
       BY  method_id, "eventDescription", date, "startTime" ORDER BY "startTime" DESC, "method_id" ASC)
       
       
-      SELECT 			name, 
-                  SUM(entrances."profitLoss") result,
-                  count(*) entrances,
-                  SUM(entrances.greens) greens,
-                  SUM(entrances.reds) reds,
-                  SUM(entrances."profitLoss") / SUM(entrances.profit + (entrances.loss * -1)) * 100 roi
+      SELECT 			methods.id,
+                  name, 
+                  COALESCE(SUM(entrances."profitLoss"), 0) result,
+                  count(entrances.*) entrances,
+                  COALESCE(SUM(entrances.greens), 0) greens,
+                  COALESCE(SUM(entrances.reds), 0) reds,
+                  COALESCE(SUM(entrances."profitLoss") / SUM(entrances.profit + (entrances.loss * -1)) * 100, 0) roi
       FROM 				methods
-      INNER JOIN	entrances
+      LEFT JOIN	entrances
       ON					entrances.method_id = methods.id
-      GROUP BY 		methods.name
+      GROUP BY 		methods.name, methods.id
     `);
 
     for (let index = 0; index < methods.length; index++) {
       const method = methods[index];
 
-      method.greenPercent = Number(
-        (method.greens / method.entrances) * 100,
-      ).toFixed(2);
-      method.redPercent = Number(
-        (method.reds / method.entrances) * 100,
-      ).toFixed(2);
+      console.log(method.entrances);
+
+      method.greenPercent =
+        method.entrances === '0'
+          ? 0
+          : Number((method.greens / method.entrances) * 100).toFixed(2);
+      method.redPercent =
+        method.entrances === '0'
+          ? 0
+          : Number((method.reds / method.entrances) * 100).toFixed(2);
     }
 
     return methods;
   }
 
-  public async create(
-    user_id: string,
-    name: string,
-    periodType: number,
-  ): Promise<string> {
+  public async create(user_id: string, name: string): Promise<string> {
     const methodRepository = getRepository(Method);
 
     const method = methodRepository.create({
       user_id,
       name,
-      periodType,
     });
 
     await methodRepository.save(method);
 
     return 'Método criado com sucesso';
+  }
+
+  public async deleteMethod(id: string): Promise<string> {
+    const methodsRepository = getRepository(Method);
+
+    const method = await methodsRepository.findOne({ id });
+
+    if (method) {
+      await methodsRepository.delete({
+        id,
+      });
+
+      return 'Estratégia deletada com sucesso.';
+    }
+
+    return 'Não existe uma estratégia com o id informado';
   }
 }
 

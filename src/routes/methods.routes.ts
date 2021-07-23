@@ -38,12 +38,21 @@ methodsRouter.get('/stats', async (request, response) => {
 
 methodsRouter.post('/', async (request, response) => {
   const methodService = new MethodsService();
-  const { name, periodType } = request.body;
+  const { name } = request.body;
   const user_id = request.user.id;
 
-  const data = await methodService.create(user_id, name, periodType);
+  const data = await methodService.create(user_id, name);
 
   response.json({ message: data });
+});
+
+methodsRouter.delete('/:id', async (request, response) => {
+  const methodService = new MethodsService();
+  const { id } = request.params;
+
+  const message = await methodService.deleteMethod(id);
+
+  response.json({ message });
 });
 
 export default methodsRouter;
