@@ -187,7 +187,11 @@ class StatsService {
 
       if (stat) {
         startBank = Number(stat.startBank);
-        finalBank = Number(stat.startBank) + Number(marketStats[0].profitLoss);
+        finalBank =
+          Number(stat.startBank) +
+          Number(marketStats[0].profitLoss) -
+          Number(stat.bankWithdraws) +
+          Number(stat.bankDeposits);
 
         stats.push({
           month: monthConverter.toString(getMonth(stat.month)),
@@ -222,6 +226,7 @@ class StatsService {
   ): Promise<BetfairBankByYear[] | null> {
     const userStatsRepository = getRepository(UserStatsModel);
     const monthConverter = new MonthConverter();
+    const entityManager = getManager();
 
     const initialDate = startOfYear(parseISO(date));
 
@@ -232,6 +237,17 @@ class StatsService {
 
     for (let index = 0; index < 12; index++) {
       const month = addMonths(initialDate, index);
+
+      const marketStats = await entityManager.query(`
+      SELECT 
+        sum("profitLoss") "profitLoss"
+      FROM "bets" 
+      WHERE bets.user_id = '${user_id}'  
+      AND date BETWEEN '${format(
+        startOfMonth(month),
+        'yyyy-MM-dd HH:mm:ss',
+      )}' AND '${format(endOfMonth(month), 'yyyy-MM-dd HH:mm:ss')}'
+    `);
 
       const stat = await userStatsRepository
         .createQueryBuilder('userstats')
@@ -254,13 +270,17 @@ class StatsService {
 
       if (stat) {
         startBankBetfair = Number(stat.startBankBetfair);
-        finalBankBetfair = Number(stat.finalBankBetfair);
+        finalBankBetfair =
+          Number(stat.finalBankBetfair) +
+          Number(marketStats[0].profitLoss) -
+          Number(stat.betfairWithdraws) +
+          Number(stat.betfairDeposits);
 
         stats.push({
           month: monthConverter.toString(getMonth(stat.month)),
           startBankBetfair,
           finalBankBetfair,
-          profitLoss: Number(stat.profitLoss),
+          profitLoss: Number(marketStats[0].profitLoss),
           betfairDeposits: Number(stat.betfairDeposits),
           betfairWithdraws: Number(stat.betfairWithdraws),
         });
