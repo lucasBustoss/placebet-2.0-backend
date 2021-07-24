@@ -150,7 +150,10 @@ class BetService {
 
     const bets = await betsRepository
       .createQueryBuilder()
-      .select(`SUM("profitLoss") profitLoss, "date"`)
+      .select(
+        `SUM("profitLoss") profitLoss, "date", 
+        SUM("goalsScored") "goalsScored", SUM("goalsConceded") "goalsConceded"`,
+      )
       .where(`user_id = '${user_id}'`)
       .andWhere(
         `date BETWEEN '${format(
@@ -184,6 +187,8 @@ class BetService {
         profitLossFormatted: 'R$ ' + Number(results.reduce((sum, result) => {
           return Number(sum) + Number(result.profitloss)
         }, 0)).toFixed(2),
+        goalsScored: results.length > 0 ? Number(results[0].goalsScored) : 0,
+        goalsConceded: results.length > 0 ? Number(results[0].goalsConceded) : 0,
         roi: Number(
           (results.reduce((sum, result) => {
             return Number(Number(sum) + Number(result.profitloss)).toFixed(2);

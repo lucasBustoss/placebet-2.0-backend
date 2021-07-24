@@ -27,6 +27,8 @@ interface UserStats {
   roiStake: string;
   avgStake: string;
   marketsCount: string;
+  goalsScored: string;
+  goalsConceded: string;
 }
 
 interface BankByYear {
@@ -90,7 +92,9 @@ class StatsService {
       SELECT 
         avg(bets.stake) "avgStake",
         count(bets."marketId") "marketsCount",
-        sum("profitLoss") "profitLoss"
+        sum("profitLoss") "profitLoss",
+        sum("goalsScored") "goalsScored",
+        sum("goalsConceded") "goalsConceded"
       FROM "bets" 
       WHERE bets.user_id = '${user_id}'  
       AND date BETWEEN '${format(startOfDay(startMonth),
@@ -133,6 +137,8 @@ class StatsService {
         roiStake,
         avgStake: Number(marketStats[0].avgStake).toFixed(2),
         marketsCount: marketStats[0].marketsCount,
+        goalsScored: marketStats[0].goalsScored,
+        goalsConceded: marketStats[0].goalsConceded,
       };
     }
 
