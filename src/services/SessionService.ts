@@ -6,6 +6,7 @@ import User from '../models/User';
 interface UserAuth {
   token: string;
   user_id: string;
+  appKey: string;
 }
 
 class SessionsService {
@@ -26,7 +27,8 @@ class SessionsService {
       }
 
       return {
-        token: response.data,
+        token: response.data.token,
+        appKey: response.data.appKey,
         user_id,
       };
     } catch {

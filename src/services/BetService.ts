@@ -184,7 +184,7 @@ class BetService {
         profitLoss: Number(results.reduce((sum, result) => {
           return Number(sum) + Number(result.profitloss)
         }, 0)).toFixed(2),
-        profitLossFormatted: 'R$ ' + Number(results.reduce((sum, result) => {
+        profitLossFormatted: '$ ' + Number(results.reduce((sum, result) => {
           return Number(sum) + Number(result.profitloss)
         }, 0)).toFixed(2),
         goalsScored: results.length > 0 ? Number(results[0].goalsScored) : 0,
