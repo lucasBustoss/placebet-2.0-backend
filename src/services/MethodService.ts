@@ -47,8 +47,6 @@ class MethodService {
     for (let index = 0; index < methods.length; index++) {
       const method = methods[index];
 
-      console.log(method.entrances);
-
       method.greenPercent =
         method.entrances === '0'
           ? 0

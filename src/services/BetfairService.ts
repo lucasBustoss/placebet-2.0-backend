@@ -6,12 +6,16 @@ import betfairApi from '../config/betfairApi';
 import EventTypeConverter from '../helpers/EventTypeConverter';
 
 import Bet from '../models/Bet';
+import User from '../models/User';
 
 class BetfairService {
   public async integrate(user_id: string, token: string): Promise<any> {
     const eventTypeConverter = new EventTypeConverter();
     const betsRepository = getRepository(Bet);
+    const userRepository = getRepository(User);
     const bets = [];
+
+    const user = await userRepository.findOne({ id: user_id });
 
     const dateFilter = `2021-06-01`;
 
@@ -28,7 +32,7 @@ class BetfairService {
       headers: {
         'content-type': 'application/json',
         'X-Authentication': token,
-        'X-Application': process.env.BETFAIR_APIKEY,
+        'X-Application': user.appKey,
       },
     };
 

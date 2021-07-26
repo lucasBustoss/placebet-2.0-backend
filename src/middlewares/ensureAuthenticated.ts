@@ -8,14 +8,20 @@ export default async function ensureAuthenticated(
 ): Promise<void> {
   try {
     const authHeader = request.headers.authorization;
+    const appKeyHeader = request.headers.appkey;
     const { user_id } = request.headers;
 
     if (!authHeader) {
       throw response.status(400).json({ error: 'Token is missing' });
     }
 
+    if (!appKeyHeader) {
+      throw response.status(400).json({ error: 'AppKey is missing' });
+    }
+
     const tokenResponse = await betfairLoginApi.post('/validate', {
       token: authHeader,
+      appKey: appKeyHeader,
     });
 
     if (tokenResponse.data === false) {

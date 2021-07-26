@@ -21,10 +21,10 @@ betfairRouter.post('/auth', async (request, response) => {
 });
 
 betfairRouter.post('/validate', async (request, response) => {
-  const { token } = request.body;
+  const { token, appKey } = request.body;
   const sessionsService = new SessionsService();
 
-  const data = await sessionsService.validate(token.toString());
+  const data = await sessionsService.validate(token, appKey);
 
   response.json({ message: data });
 });

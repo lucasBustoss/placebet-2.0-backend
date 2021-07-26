@@ -21,6 +21,9 @@ class User {
   @Column()
   emailBetfair: string;
 
+  @Column()
+  appKey: string;
+
   @CreateDateColumn()
   created_at: Date;
 
