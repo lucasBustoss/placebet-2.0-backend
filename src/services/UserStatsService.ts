@@ -200,7 +200,8 @@ class StatsService {
           Number(stat.bankDeposits);
 
         stats.push({
-          month: monthConverter.toString(getMonth(stat.month)),
+          monthDescription: monthConverter.toString(getMonth(stat.month)),
+          month: format(stat.month, 'MM-yyyy'),
           startBank,
           finalBank,
           profitLoss: Number(marketStats[0].profitLoss),
@@ -212,7 +213,10 @@ class StatsService {
         });
       } else {
         stats.push({
-          month: monthConverter.toString(getMonth(startOfDay(month))),
+          monthDescription: monthConverter.toString(
+            getMonth(startOfDay(month)),
+          ),
+          month: format(month, 'MM-yyyy'),
           startBank: finalBank || 0,
           finalBank: finalBank || 0,
           profitLoss: 0,
@@ -277,13 +281,14 @@ class StatsService {
       if (stat) {
         startBankBetfair = Number(stat.startBankBetfair);
         finalBankBetfair =
-          Number(stat.finalBankBetfair) +
+          Number(stat.startBankBetfair) +
           Number(marketStats[0].profitLoss) -
           Number(stat.betfairWithdraws) +
           Number(stat.betfairDeposits);
 
         stats.push({
-          month: monthConverter.toString(getMonth(stat.month)),
+          monthDescription: monthConverter.toString(getMonth(stat.month)),
+          month: format(stat.month, 'MM-yyyy'),
           startBankBetfair,
           finalBankBetfair,
           profitLoss: Number(marketStats[0].profitLoss),
@@ -292,7 +297,10 @@ class StatsService {
         });
       } else {
         stats.push({
-          month: monthConverter.toString(getMonth(startOfDay(month))),
+          monthDescription: monthConverter.toString(
+            getMonth(startOfDay(month)),
+          ),
+          month: format(month, 'MM-yyyy'),
           startBankBetfair: finalBankBetfair || 0,
           finalBankBetfair: finalBankBetfair || 0,
           profitLoss: 0,

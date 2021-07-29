@@ -14,7 +14,7 @@ class SessionsService {
     try {
       const userRepository = getRepository(User);
       let user_id;
-      let shouldGetAppKey = false;
+      let shouldGetAppKey = true;
 
       const user = await userRepository.findOne({ loginBetfair: username });
 
