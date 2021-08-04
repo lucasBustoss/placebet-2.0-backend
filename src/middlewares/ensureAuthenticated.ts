@@ -25,12 +25,16 @@ export default async function ensureAuthenticated(
     });
 
     if (tokenResponse.data === false) {
-      throw response.status(400).json({ error: 'Invalid Token!' });
+      throw response.status(400).json({
+        error: 'Invalid token or appKey is not compatible with token!',
+      });
     }
 
-    request.user = {
-      id: user_id.toString(),
-    };
+    if (user_id) {
+      request.user = {
+        id: user_id.toString(),
+      };
+    }
 
     return next();
   } catch (err) {

@@ -24,6 +24,27 @@ class User {
   @Column()
   appKey: string;
 
+  @Column()
+  currencyType: string;
+
+  @Column()
+  startBank: number;
+
+  @Column()
+  startBetfairBank: number;
+
+  @Column()
+  date: Date;
+
+  @Column()
+  moneyType: number;
+
+  @Column()
+  stake: number;
+
+  @Column()
+  visibility: number;
+
   @CreateDateColumn()
   created_at: Date;
 

@@ -5,7 +5,7 @@ import User from '../models/User';
 
 interface UserAuth {
   token: string;
-  user_id: string;
+  user: User;
   appKey: string;
 }
 
@@ -13,7 +13,6 @@ class SessionsService {
   public async auth(username: string, password: string): Promise<UserAuth> {
     try {
       const userRepository = getRepository(User);
-      let user_id;
       let shouldGetAppKey = true;
 
       const user = await userRepository.findOne({ loginBetfair: username });
@@ -29,8 +28,6 @@ class SessionsService {
       });
 
       if (response.data && user) {
-        user_id = user.id;
-
         if (!user.appKey) {
           this.updateAppKey(user.id, response.data.appKey);
         }
@@ -39,7 +36,7 @@ class SessionsService {
       return {
         token: response.data.token,
         appKey: shouldGetAppKey ? response.data.appKey : user.appKey,
-        user_id,
+        user,
       };
     } catch (err) {
       console.log(err);

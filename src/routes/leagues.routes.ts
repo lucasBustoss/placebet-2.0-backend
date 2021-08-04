@@ -53,7 +53,7 @@ leaguesRouter.delete('/:id', async (request, response) => {
 
     const message = await leagueService.deleteLeague(id);
 
-    response.json({ message });
+    return response.json({ message });
   } catch (err) {
     if (err.message.includes('foreign key')) {
       console.log(err);
@@ -64,6 +64,10 @@ leaguesRouter.delete('/:id', async (request, response) => {
     }
 
     console.log(err);
+
+    return response.status(400).json({
+      error: err.message,
+    });
   }
 });
 

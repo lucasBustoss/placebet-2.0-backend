@@ -75,7 +75,7 @@ class StatsService {
         month: previousMonth,
       });
 
-      if (previousStats) {
+      if (!previousStats) {
         await this.create(
           user_id,
           format(addHours(startOfMonth(new Date()), 3), 'yyyy-MM-dd HH:mm:ss'),
