@@ -3,11 +3,11 @@ import UsersService from '../services/UsersService';
 
 import ensureAuthenticated from '../middlewares/ensureAuthenticated';
 
-const methodsRouter = Router();
+const usersRouter = Router();
 
-methodsRouter.use(ensureAuthenticated);
+usersRouter.use(ensureAuthenticated);
 
-methodsRouter.post('/', async (request, response) => {
+usersRouter.post('/', async (request, response) => {
   try {
     const usersService = new UsersService();
     const {
@@ -48,4 +48,4 @@ methodsRouter.post('/', async (request, response) => {
   }
 });
 
-export default methodsRouter;
+export default usersRouter;
