@@ -1,9 +1,17 @@
-import { parseISO, format } from 'date-fns';
+import { parseISO } from 'date-fns';
 import { getRepository } from 'typeorm';
 
 import User from '../models/User';
 
 class UserService {
+  public async find(user_id: string): Promise<User> {
+    const userRepository = getRepository(User);
+
+    const user = userRepository.findOne(user_id);
+
+    return user;
+  }
+
   public async create(
     username: string,
     appKey: string,

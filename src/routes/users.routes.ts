@@ -7,6 +7,20 @@ const usersRouter = Router();
 
 usersRouter.use(ensureAuthenticated);
 
+usersRouter.get('/', async (request, response) => {
+  try {
+    const usersService = new UsersService();
+    const { user_id } = request.query;
+
+    const data = await usersService.find(user_id.toString());
+
+    return response.json(data);
+  } catch (err) {
+    console.log(err);
+    return response.status(400).json({ error: err.message });
+  }
+});
+
 usersRouter.post('/', async (request, response) => {
   try {
     const usersService = new UsersService();

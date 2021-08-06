@@ -61,24 +61,27 @@ class StatsService {
 
     const existsUserStats = await statsRepository.findOne({
       user_id,
-      month: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
+      month: format(
+        addHours(startOfMonth(new Date()), 3),
+        'yyyy-MM-dd HH:mm:ss',
+      ),
     });
 
     if (!existsUserStats) {
       const previousMonth = format(
         addMonths(startOfMonth(new Date()), -1),
-        'yyyy-MM-dd',
+        'yyyy-MM-dd HH:mm:ss',
       );
 
       const previousStats = await statsRepository.findOne({
         user_id,
-        month: previousMonth,
+        month: parseISO(previousMonth),
       });
 
-      if (!previousStats) {
+      if (previousStats) {
         await this.create(
           user_id,
-          format(addHours(startOfMonth(new Date()), 3), 'yyyy-MM-dd HH:mm:ss'),
+          format(startOfMonth(new Date()), 'yyyy-MM-dd HH:mm:ss'),
           previousStats.startBank,
           previousStats.startBankBetfair,
           previousStats.stake,
@@ -335,6 +338,8 @@ class StatsService {
         roiBank: 0,
         roiStake: 0,
       });
+
+      console.log(userStats);
 
       await usRepository.save(userStats);
     }
