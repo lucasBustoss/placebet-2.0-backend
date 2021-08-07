@@ -17,7 +17,7 @@ class BetfairService {
 
     const user = await userRepository.findOne({ id: user_id });
 
-    const dateFilter = `2021-07-30T03:00:00`;
+    const dateFilter = `2021-08-07T03:00:00`;
 
     const body = {
       betStatus: 'SETTLED',
