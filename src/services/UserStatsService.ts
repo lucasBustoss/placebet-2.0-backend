@@ -59,13 +59,6 @@ class StatsService {
     const endMonth = parseISO(format(endOfMonth(parseISO(date)), 'yyyy-MM-dd'));
     const entityManager = getManager();
 
-    // const existsUserStats = await statsRepository.findOne({
-    //   user_id,
-    //   month: format(addHours(startOfMonth(new Date()), 3), 'yyyy-MM-dd'),
-    // });
-
-    console.log(format(startMonth, 'yyyy-MM-dd'));
-
     const existsUserStats = await entityManager.query(`
       SELECT 
         1
@@ -77,21 +70,24 @@ class StatsService {
     if (existsUserStats.length === 0) {
       const previousMonth = format(
         addMonths(startOfMonth(new Date()), -1),
-        'yyyy-MM-dd HH:mm:ss',
+        'yyyy-MM-dd',
       );
 
-      const previousStats = await statsRepository.findOne({
-        user_id,
-        month: parseISO(previousMonth),
-      });
+      const previousStats = await entityManager.query(`
+      SELECT 
+        *
+      FROM "userstats" 
+      WHERE userstats.user_id = '${user_id}'  
+      AND month = '${format(parseISO(previousMonth), 'yyyy-MM-dd')}'
+    `);
 
-      if (previousStats) {
+      if (previousStats.length > 0) {
         await this.create(
           user_id,
-          format(startOfMonth(new Date()), 'yyyy-MM-dd HH:mm:ss'),
-          previousStats.startBank,
-          previousStats.startBankBetfair,
-          previousStats.stake,
+          format(startMonth, 'yyyy-MM-dd'),
+          previousStats[0].startBank,
+          previousStats[0].startBankBetfair,
+          previousStats[0].stake,
         );
       }
     }
@@ -136,7 +132,7 @@ class StatsService {
       ).toFixed(2);
 
       return {
-        month: format(stats.userstats_month, 'MM-yyyy'),
+        month: format(addHours(stats.userstats_month, 3), 'MM-yyyy'),
         stake: stats.userstats_stake,
         startBank: stats.userstats_startBank,
         finalBank: stats.userstats_finalBank,
@@ -345,8 +341,6 @@ class StatsService {
         roiBank: 0,
         roiStake: 0,
       });
-
-      console.log(userStats);
 
       await usRepository.save(userStats);
     }
