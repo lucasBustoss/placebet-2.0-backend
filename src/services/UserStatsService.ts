@@ -59,15 +59,22 @@ class StatsService {
     const endMonth = parseISO(format(endOfMonth(parseISO(date)), 'yyyy-MM-dd'));
     const entityManager = getManager();
 
-    const existsUserStats = await statsRepository.findOne({
-      user_id,
-      month: format(
-        addHours(startOfMonth(new Date()), 3),
-        'yyyy-MM-dd HH:mm:ss',
-      ),
-    });
+    // const existsUserStats = await statsRepository.findOne({
+    //   user_id,
+    //   month: format(addHours(startOfMonth(new Date()), 3), 'yyyy-MM-dd'),
+    // });
 
-    if (!existsUserStats) {
+    console.log(format(startMonth, 'yyyy-MM-dd'));
+
+    const existsUserStats = await entityManager.query(`
+      SELECT 
+        1
+      FROM "userstats" 
+      WHERE userstats.user_id = '${user_id}'  
+      AND month = '${format(startMonth, 'yyyy-MM-dd')}'
+    `);
+
+    if (existsUserStats.length === 0) {
       const previousMonth = format(
         addMonths(startOfMonth(new Date()), -1),
         'yyyy-MM-dd HH:mm:ss',
