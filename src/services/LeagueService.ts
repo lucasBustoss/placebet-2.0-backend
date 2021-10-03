@@ -9,6 +9,7 @@ class LeagueService {
 
     const leagues = await leagueRepository.find({
       where: [{ user_id }, { user_id: IsNull() }],
+      order: { name: 'ASC' },
     });
 
     return leagues;
