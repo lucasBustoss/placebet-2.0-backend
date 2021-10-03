@@ -15,8 +15,15 @@ class MethodService {
   public async findWithStats(user_id: string, date: string): Promise<any> {
     const entityManager = getManager();
 
-    const startMonth = format(startOfMonth(parseISO(date)), 'yyyy-MM-dd');
-    const endMonth = format(endOfMonth(parseISO(date)), 'yyyy-MM-dd');
+    const startMonth =
+      date !== '1900-01-01'
+        ? format(startOfMonth(parseISO(date)), 'yyyy-MM-dd')
+        : '1900-01-01';
+
+    const endMonth =
+      date !== '1900-01-01'
+        ? format(endOfMonth(parseISO(date)), 'yyyy-MM-dd')
+        : '3000-01-01';
 
     const methods = await entityManager.query(`
     WITH entrances as (
@@ -41,6 +48,7 @@ class MethodService {
       FROM 				methods
       LEFT JOIN	entrances
       ON					entrances.method_id = methods.id
+      WHERE       user_id = '${user_id}'
       GROUP BY 		methods.name, methods.id
     `);
 
