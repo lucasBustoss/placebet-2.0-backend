@@ -51,6 +51,7 @@ class LeagueService {
       FROM 				leagues
       LEFT JOIN	  entrances
       ON					entrances.league_id = leagues.id
+      WHERE user_id = '${user_id}'
       GROUP BY 		leagues.name, leagues.id
       ORDER BY    result DESC
     `);
