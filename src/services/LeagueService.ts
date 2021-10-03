@@ -53,6 +53,7 @@ class LeagueService {
       ON					entrances.league_id = leagues.id
       WHERE       (user_id IS NULL OR user_id = '${user_id}')
       GROUP BY 		leagues.name, leagues.id
+      ORDER BY    leagues.name
     `);
 
     for (let index = 0; index < leagues.length; index++) {

@@ -50,6 +50,7 @@ class MethodService {
       ON					entrances.method_id = methods.id
       WHERE       user_id = '${user_id}'
       GROUP BY 		methods.name, methods.id
+      ORDER BY    methods.name
     `);
 
     for (let index = 0; index < methods.length; index++) {
