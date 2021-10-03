@@ -37,7 +37,7 @@ class LeagueService {
         case when SUM("profitLoss") < 0 then SUM("profitLoss") else 0 end loss,  
         league_id, "eventDescription", "date" 
       FROM "bets" "Bet" 
-      WHERE user_id = '${user_id}' AND date BETWEEN '${startMonth}' AND '${endMonth}' AND league_id IS NOT NULL GROUP 
+      WHERE (user_id IS NULL OR user_id = '${user_id}') AND date BETWEEN '${startMonth}' AND '${endMonth}' AND league_id IS NOT NULL GROUP 
       BY  league_id, "eventDescription", date, "startTime" ORDER BY "startTime" DESC, "league_id" ASC)
       
       
@@ -51,7 +51,7 @@ class LeagueService {
       FROM 				leagues
       LEFT JOIN	  entrances
       ON					entrances.league_id = leagues.id
-      WHERE user_id = '${user_id}'
+      WHERE       (user_id IS NULL OR user_id = '${user_id}')
       GROUP BY 		leagues.name, leagues.id
       ORDER BY    result DESC
     `);
