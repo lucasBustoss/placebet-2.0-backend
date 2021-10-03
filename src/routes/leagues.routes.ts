@@ -25,7 +25,11 @@ leaguesRouter.get('/stats', async (request, response) => {
   try {
     const leagueService = new LeagueService();
     const user_id = request.user.id;
-    const { date } = request.query;
+    let { date } = request.query;
+
+    if (!date) {
+      date = '1900-01-01';
+    }
 
     const data = await leagueService.findWithStats(user_id, date.toString());
 
